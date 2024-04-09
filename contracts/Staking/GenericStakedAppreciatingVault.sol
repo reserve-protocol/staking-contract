@@ -37,7 +37,7 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         uint256 allAvailableAssets = _asset.balanceOf(address(this));
         uint256 rewardsToBeDistributed = allAvailableAssets - totalDeposited;
 
-        if (rewardsToBeDistributed > 0) {
+        if (rewardsToBeDistributed != 0) {
             if (useFullDuration) {
                 rewardTracker.rewardPeriodEnd = block.timestamp + DISTRIBUTION_PERIOD;
             }
@@ -94,6 +94,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     }
 
     function _decimalsOffset() internal pure override returns (uint8) {
-        return 0;
+        return 0; // TODO: Change this?
     }
 }

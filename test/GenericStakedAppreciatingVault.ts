@@ -180,6 +180,10 @@ describe("Generic Staked Appreciating Vault", function () {
       expect((await stakingVault.read.previewRedeem([parseUnits("100", 18)])) < parseUnits("878", 18)).to.be.true;
     });
 
+    it("Complex Scenario - Multiple Reward Additions", async function () {
+      // TODO: Well...
+    });
+
     it("Last Depositor", async function () {
       // TODO: Last depositor must always get all the rewards regardless of distribution.
     });
