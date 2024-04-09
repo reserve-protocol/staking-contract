@@ -68,9 +68,13 @@ describe("Generic Staked Appreciating Vault", function () {
       });
     }
 
-    async function addRewardsAsDeployer(amount: bigint) {
-      await token.write.approve([stakingVault.address, amount]);
-      await stakingVault.write.addRewards([amount]);
+    async function addRewardsAs(user: WalletClient, amount: bigint) {
+      await token.write.approve([stakingVault.address, amount], {
+        account: user.account,
+      });
+      await stakingVault.write.addRewards([amount], {
+        account: user.account,
+      });
     }
 
     it("Linear Distribution", async function () {
@@ -83,7 +87,7 @@ describe("Generic Staked Appreciating Vault", function () {
       expect(await stakingVault.read.previewWithdraw([parseUnits("100", 18)])).to.equal(parseUnits("100", 18));
 
       // Let's add 700 tokens as rewards over 1 week
-      await addRewardsAsDeployer(parseUnits("700", 18));
+      await addRewardsAs(deployer, parseUnits("700", 18));
 
       // Let's go forward by 1 day.
       await time.increase(BigInt(60 * 60 * 24));
@@ -103,7 +107,7 @@ describe("Generic Staked Appreciating Vault", function () {
       await stakeAs(user1, parseUnits("100", 18));
 
       // Add Rewards
-      await addRewardsAsDeployer(parseUnits("700", 18));
+      await addRewardsAs(deployer, parseUnits("700", 18));
 
       // Half the distribution later...
       await time.increase(BigInt(60 * 60 * 24 * 3.5)); // Half the duration
@@ -133,7 +137,7 @@ describe("Generic Staked Appreciating Vault", function () {
       await stakeAs(user1, parseUnits("100", 18));
 
       // Add Rewards
-      await addRewardsAsDeployer(parseUnits("700", 18));
+      await addRewardsAs(deployer, parseUnits("700", 18));
 
       // Half the distribution later...
       await time.increase(BigInt(60 * 60 * 24 * 3.5)); // Half the duration
