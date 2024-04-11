@@ -36,9 +36,9 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       // loggingEnabled: true,
-      forking: {
-        url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-      },
+      // forking: {
+      //   url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      // },
       accounts: {
         mnemonic: MNEMONIC,
         accountsBalance: parseEther("1000").toString(),

@@ -27,29 +27,56 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         uint256 _distributionPeriod // {s} Distribution Period for Accumulated Rewards
     ) ERC4626(_underlying) ERC20(_name, _symbol) {
         DISTRIBUTION_PERIOD = _distributionPeriod;
+
+        _updateRewards();
     }
 
-    function _updateRewards(bool useFullDuration) internal {
+    function _updateRewards() internal {
+        // TODO: No tracking when totalSupply() == 0
         IERC20 _asset = IERC20(asset());
 
-        totalDeposited = totalAssets();
+        uint256 accountedRewards = _currentAccountedRewards();
+        totalDeposited = totalDeposited + accountedRewards;
 
-        uint256 allAvailableAssets = _asset.balanceOf(address(this));
-        uint256 rewardsToBeDistributed = allAvailableAssets - totalDeposited;
+        if (block.timestamp < rewardTracker.rewardPeriodEnd) {
+            // We're only scaling the current distribution reward amount to the current total assets,
+            // without adding any new unaccounted rewards.
 
-        if (rewardsToBeDistributed != 0) {
-            if (useFullDuration) {
-                rewardTracker.rewardPeriodEnd = block.timestamp + DISTRIBUTION_PERIOD;
-            }
+            rewardTracker.rewardAmount = rewardTracker.rewardAmount - accountedRewards;
+        } else {
+            // The current distribution period has ended, so we're adding the unaccounted rewards
+            // to the next distribution period starting now.
 
+            uint256 allAvailableAssets = _asset.balanceOf(address(this));
+            uint256 rewardsToBeDistributed = allAvailableAssets - totalDeposited;
+
+            rewardTracker.rewardPeriodEnd = block.timestamp + DISTRIBUTION_PERIOD;
             rewardTracker.rewardAmount = rewardsToBeDistributed;
-            rewardTracker.rewardPeriodStart = block.timestamp;
         }
+
+        // Either way, we're tracking the distribution from now.
+        rewardTracker.rewardPeriodStart = block.timestamp;
     }
 
     function totalAssets() public view override returns (uint256) {
+        return totalDeposited + _currentAccountedRewards();
+    }
+
+    function addRewards(uint256 _amount) external {
+        IERC20 _asset = IERC20(asset());
+
+        if (_amount != 0) {
+            SafeERC20.safeTransferFrom(_asset, msg.sender, address(this), _amount);
+        }
+
+        _updateRewards();
+
+        emit RewardAdded(rewardTracker.rewardAmount, rewardTracker.rewardPeriodStart, rewardTracker.rewardPeriodEnd);
+    }
+
+    function _currentAccountedRewards() internal view returns (uint256) {
         if (block.timestamp >= rewardTracker.rewardPeriodEnd) {
-            return totalDeposited + rewardTracker.rewardAmount;
+            return rewardTracker.rewardAmount;
         }
 
         uint256 previousDistributionPeriod = rewardTracker.rewardPeriodEnd - rewardTracker.rewardPeriodStart;
@@ -58,23 +85,11 @@ contract GenericStakedAppreciatingVault is ERC4626 {
 
         uint256 accountedRewards = (rewardTracker.rewardAmount * timePassedPercentage) / SCALING_FACTOR;
 
-        return totalDeposited + accountedRewards;
-    }
-
-    function addRewards(uint256 _amount) public {
-        IERC20 _asset = IERC20(asset());
-
-        if (_amount != 0) {
-            SafeERC20.safeTransferFrom(_asset, msg.sender, address(this), _amount);
-        }
-
-        _updateRewards(true);
-
-        emit RewardAdded(rewardTracker.rewardAmount, rewardTracker.rewardPeriodStart, rewardTracker.rewardPeriodEnd);
+        return accountedRewards;
     }
 
     function _deposit(address caller, address receiver, uint256 assets, uint256 shares) internal override {
-        _updateRewards(false); // Does not change distribution timeline
+        _updateRewards();
 
         super._deposit(caller, receiver, assets, shares);
         totalDeposited += assets;
@@ -87,7 +102,7 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         uint256 assets,
         uint256 shares
     ) internal override {
-        _updateRewards(false); // Does not change distribution timeline
+        _updateRewards();
 
         super._withdraw(caller, receiver, owner, assets, shares);
         totalDeposited -= assets;

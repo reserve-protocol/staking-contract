@@ -77,6 +77,15 @@ describe("Generic Staked Appreciating Vault", function () {
       });
     }
 
+    async function triggerNextPeriod() {
+      const [deployer] = await hre.viem.getWalletClients();
+
+      const rewardTracker = await stakingVault.read.rewardTracker();
+      await time.increaseTo(rewardTracker[1] + 1n); // This is the first distribution period that started with 0 rewards.
+
+      await addRewardsAs(deployer, 0n); // Trigger next period
+    }
+
     it("Linear Distribution", async function () {
       const [deployer, user] = await hre.viem.getWalletClients();
 
@@ -87,10 +96,14 @@ describe("Generic Staked Appreciating Vault", function () {
       expect(await stakingVault.read.previewWithdraw([parseUnits("100", 18)])).to.equal(parseUnits("100", 18));
 
       // Let's add 700 tokens as rewards over 1 week
+      // Remember these are added for the next period!
       await addRewardsAs(deployer, parseUnits("700", 18));
+
+      await triggerNextPeriod();
 
       // Let's go forward by 1 day.
       await time.increase(BigInt(60 * 60 * 24));
+
       // After 1 day, we expect to get 200 tokens
       expect((await stakingVault.read.previewRedeem([parseUnits("100", 18)])) > parseUnits("199", 18)).to.be.true;
 
@@ -108,6 +121,8 @@ describe("Generic Staked Appreciating Vault", function () {
 
       // Add Rewards
       await addRewardsAs(deployer, parseUnits("700", 18));
+
+      await triggerNextPeriod();
 
       // Half the distribution later...
       await time.increase(BigInt(60 * 60 * 24 * 3.5)); // Half the duration
@@ -138,6 +153,8 @@ describe("Generic Staked Appreciating Vault", function () {
 
       // Add Rewards
       await addRewardsAs(deployer, parseUnits("700", 18));
+
+      await triggerNextPeriod();
 
       // Half the distribution later...
       await time.increase(BigInt(60 * 60 * 24 * 3.5)); // Half the duration
