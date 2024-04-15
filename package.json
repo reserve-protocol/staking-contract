@@ -10,7 +10,8 @@
     "size": "hardhat size-contracts",
     "clean": "hardhat clean && rm -rf ./cache",
     "format": "prettier --write \"./**/*.{js,ts,json,md,sol,yaml,yml}\"",
-    "anvil": "anvil --fork-url https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161 --chain-id 31337 --balance 1000"
+    "anvil": "anvil --fork-url https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161 --chain-id 31337 --balance 1000",
+    "coverage": "forge coverage --report lcov"
   },
   "repository": {
     "type": "git",
