@@ -4,7 +4,7 @@ pragma solidity 0.8.24;
 import { Test, console2 } from "forge-std/Test.sol";
 
 import { GenericStakedAppreciatingVault, RewardTracker, IERC20 } from "@src/staking/GenericStakedAppreciatingVault.sol";
-import { ERC20Mock } from "@src/testing/ERC20Mock.sol";
+import { ERC20Mock } from "@test/mocks/ERC20Mock.sol";
 
 contract GenericStakedAppreciatingVaultTest is Test {
     ERC20Mock private token;
