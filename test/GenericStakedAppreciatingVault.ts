@@ -204,9 +204,5 @@ describe("Generic Staked Appreciating Vault", function () {
     it("Complex Scenario - Multiple Reward Additions", async function () {
       // TODO: Well...
     });
-
-    it("Last Depositor", async function () {
-      // TODO: Last depositor must always get all the rewards regardless of distribution.
-    });
   });
 });

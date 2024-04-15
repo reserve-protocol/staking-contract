@@ -779,25 +779,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-ignition-viem@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@nomicfoundation/hardhat-ignition-viem@npm:0.15.0"
+"@nomicfoundation/hardhat-ignition-viem@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "@nomicfoundation/hardhat-ignition-viem@npm:0.15.1"
   peerDependencies:
-    "@nomicfoundation/hardhat-ignition": ^0.15.0
+    "@nomicfoundation/hardhat-ignition": ^0.15.1
     "@nomicfoundation/hardhat-viem": ^2.0.0
-    "@nomicfoundation/ignition-core": ^0.15.0
+    "@nomicfoundation/ignition-core": ^0.15.1
     hardhat: ^2.18.0
     viem: ^2.7.6
-  checksum: 10c0/4a2a342159c8e4a3001ed726f0f67184521e05ea21aeadc4ff437c82761db5db407e506f2afa29a91b7a435c0bdb85d20616d997a7eb4f717016b9a002649490
+  checksum: 10c0/92fb95db60a9ddb335fc2795695d701a70bfb5fb4e0652bdf591e6fb4f8d39d598a6316eb0246a81ec5e8263bd9c2d73b327fe375ec7ca0919fd03fa57576253
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-ignition@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@nomicfoundation/hardhat-ignition@npm:0.15.0"
+"@nomicfoundation/hardhat-ignition@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "@nomicfoundation/hardhat-ignition@npm:0.15.1"
   dependencies:
-    "@nomicfoundation/ignition-core": "npm:^0.15.0"
-    "@nomicfoundation/ignition-ui": "npm:^0.15.0"
+    "@nomicfoundation/ignition-core": "npm:^0.15.1"
+    "@nomicfoundation/ignition-ui": "npm:^0.15.1"
     chalk: "npm:^4.0.0"
     debug: "npm:^4.3.2"
     fs-extra: "npm:^10.0.0"
@@ -805,7 +805,7 @@ __metadata:
   peerDependencies:
     "@nomicfoundation/hardhat-verify": ^2.0.1
     hardhat: ^2.18.0
-  checksum: 10c0/ba734e1dc03c5bbbf44a419c29bb5c74b175156f484516632ed09d0777b6ce7e10ae3fec1372bfe2c9e22c74a607235bce60891b087923510c2b302922089998
+  checksum: 10c0/96e317026bda1270f71af4c43671c12fe9c8e9ddbc1841667cb61616de285116b2152c7464720d4c3c869a8f6925760047a8b9f93fe0337b2eca812cb46eca1a
   languageName: node
   linkType: hard
 
@@ -878,11 +878,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/ignition-core@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@nomicfoundation/ignition-core@npm:0.15.0"
+"@nomicfoundation/ignition-core@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "@nomicfoundation/ignition-core@npm:0.15.1"
   dependencies:
     "@ethersproject/address": "npm:5.6.1"
+    "@nomicfoundation/solidity-analyzer": "npm:^0.1.1"
     cbor: "npm:^9.0.0"
     debug: "npm:^4.3.2"
     ethers: "npm:^6.7.0"
@@ -890,14 +891,14 @@ __metadata:
     immer: "npm:10.0.2"
     lodash: "npm:4.17.21"
     ndjson: "npm:2.0.0"
-  checksum: 10c0/7a87c5ddda53f57b688bdad65a90c532437ba29e8fff2fe8c9bb0925d6a3610c28c9130215f1e6cf130f4f2571db961c0ac5e762366df643a712115a3a4a8c1d
+  checksum: 10c0/5b9fd024788f26d4dfdffea889be5c1bc32ce0ca5b67e4c76e4bcc5b1a93b546fd693d59c9efcc4308459166fa82c24de762f149e9a8d1c7a3cbee35622e2d62
   languageName: node
   linkType: hard
 
-"@nomicfoundation/ignition-ui@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@nomicfoundation/ignition-ui@npm:0.15.0"
-  checksum: 10c0/195c857a8a024f178590914486ffb9dc4deeddabe2152574e67c926f78eb4daaf835131f6280beb7ad42d68654e2604cc316d985a919159c7a0b894801dd7932
+"@nomicfoundation/ignition-ui@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "@nomicfoundation/ignition-ui@npm:0.15.1"
+  checksum: 10c0/4900862ff4146b57f704d28ad08863e082fdbcf5d6b5ff802524a14c2700e7b30b261af4a84935ad18d72c1383209fcabd29a9c0c8a0e73e70ed9365f1ead439
   languageName: node
   linkType: hard
 
@@ -971,7 +972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/solidity-analyzer@npm:^0.1.0":
+"@nomicfoundation/solidity-analyzer@npm:^0.1.0, @nomicfoundation/solidity-analyzer@npm:^0.1.1":
   version: 0.1.1
   resolution: "@nomicfoundation/solidity-analyzer@npm:0.1.1"
   dependencies:
@@ -1391,12 +1392,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.12.5":
-  version: 20.12.5
-  resolution: "@types/node@npm:20.12.5"
+"@types/node@npm:*, @types/node@npm:^20.12.7":
+  version: 20.12.7
+  resolution: "@types/node@npm:20.12.7"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10c0/2da65516fba98f0417620e42bddbe53e144d4782d69cd37f99df2537c6850b9cfbdb8a017f02c61e9a074bcac84f9f3f221b250474ac8c6b95d507a47e8d53f9
+  checksum: 10c0/dce80d63a3b91892b321af823d624995c61e39c6a223cc0ac481a44d337640cc46931d33efb3beeed75f5c85c3bda1d97cef4c5cd4ec333caf5dee59cff6eca0
   languageName: node
   linkType: hard
 
@@ -2063,7 +2064,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chai@npm:^4.2.0":
+"chai@npm:^4.4.1":
   version: 4.4.1
   resolution: "chai@npm:4.4.1"
   dependencies:
@@ -3033,6 +3034,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"forge-std@github:foundry-rs/forge-std#v1.8.1":
+  version: 1.7.6
+  resolution: "forge-std@https://github.com/foundry-rs/forge-std.git#commit=bb4ceea94d6f10eeb5b41dc2391c6c8bf8e734ef"
+  checksum: 10c0/c8e2cc56d8322b1da13c82b12d77cad86235e88998c58139882212f4890edf0462d4fa808ac1c1b59c6edde705f0a2aa2071efff8772e9de0dc2ab35c9c8d139
+  languageName: node
+  linkType: hard
+
 "form-data-encoder@npm:^2.1.2":
   version: 2.1.4
   resolution: "form-data-encoder@npm:2.1.4"
@@ -3420,7 +3428,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hardhat-gas-reporter@npm:^1.0.8":
+"hardhat-gas-reporter@npm:^1.0.10":
   version: 1.0.10
   resolution: "hardhat-gas-reporter@npm:1.0.10"
   dependencies:
@@ -4285,31 +4293,32 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "metacrypt-template-viem@workspace:."
   dependencies:
-    "@nomicfoundation/hardhat-ignition": "npm:^0.15.0"
-    "@nomicfoundation/hardhat-ignition-viem": "npm:^0.15.0"
+    "@nomicfoundation/hardhat-ignition": "npm:^0.15.1"
+    "@nomicfoundation/hardhat-ignition-viem": "npm:^0.15.1"
     "@nomicfoundation/hardhat-network-helpers": "npm:^1.0.10"
     "@nomicfoundation/hardhat-toolbox-viem": "npm:^3.0.0"
     "@nomicfoundation/hardhat-verify": "npm:^2.0.5"
     "@nomicfoundation/hardhat-viem": "npm:^2.0.0"
-    "@nomicfoundation/ignition-core": "npm:^0.15.0"
+    "@nomicfoundation/ignition-core": "npm:^0.15.1"
     "@openzeppelin/contracts": "npm:^5.0.2"
     "@types/chai": "npm:^4.3.14"
     "@types/chai-as-promised": "npm:^7.1.8"
     "@types/mocha": "npm:^10.0.6"
-    "@types/node": "npm:^20.12.5"
-    chai: "npm:^4.2.0"
+    "@types/node": "npm:^20.12.7"
+    chai: "npm:^4.4.1"
+    forge-std: "github:foundry-rs/forge-std#v1.8.1"
     hardhat: "npm:^2.22.2"
     hardhat-contract-sizer: "npm:^2.10.0"
-    hardhat-gas-reporter: "npm:^1.0.8"
+    hardhat-gas-reporter: "npm:^1.0.10"
     prettier: "npm:^3.2.5"
     prettier-plugin-solidity: "npm:^1.3.1"
-    solhint: "npm:^4.5.2"
+    solhint: "npm:^4.5.4"
     solhint-plugin-prettier: "npm:^0.1.0"
     solidity-coverage: "npm:^0.8.12"
     ts-node: "npm:^10.9.2"
     tsconfig-paths: "npm:^4.2.0"
     typescript: "npm:~5.3.3"
-    viem: "npm:^2.9.13"
+    viem: "npm:^2.9.17"
   languageName: unknown
   linkType: soft
 
@@ -5656,9 +5665,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solhint@npm:^4.5.2":
-  version: 4.5.2
-  resolution: "solhint@npm:4.5.2"
+"solhint@npm:^4.5.4":
+  version: 4.5.4
+  resolution: "solhint@npm:4.5.4"
   dependencies:
     "@solidity-parser/parser": "npm:^0.18.0"
     ajv: "npm:^6.12.6"
@@ -5684,7 +5693,7 @@ __metadata:
       optional: true
   bin:
     solhint: solhint.js
-  checksum: 10c0/a54cc8df54ed711ca6be783b9291eb9e838f518f236d4df05c6ef412ead6a21f4a5bf3bace62ca7d2ed69f4566d5289db4c8c93e0c5e23ac91401904e1f1f312
+  checksum: 10c0/85bc62536c6b1269403b2af369dcfc7c63d07c6efb994f4e3c4e7e96d3511a64ab10c68635c6676e09eee289104b5d349091960994e990cacf240497170c8aed
   languageName: node
   linkType: hard
 
@@ -6308,9 +6317,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.9.13":
-  version: 2.9.13
-  resolution: "viem@npm:2.9.13"
+"viem@npm:^2.9.17":
+  version: 2.9.17
+  resolution: "viem@npm:2.9.17"
   dependencies:
     "@adraffy/ens-normalize": "npm:1.10.0"
     "@noble/curves": "npm:1.2.0"
@@ -6325,7 +6334,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/24736b343ffdb51f8fbfdfbf538806551f70bffcddade960b344aec241fd6c7334bb4c439313904310ef17b1e188788d362552c4c8e221544cd2c809be4114db
+  checksum: 10c0/e26843e0f143d110f0111071e6ef3f7bbdc47263c849db47e32c94637ebad1c7180dd386d3af9b485d79dd09b7f58e3b9fc96c9fb5a2e61979c3c5b8a48735af
   languageName: node
   linkType: hard
 

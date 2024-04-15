@@ -4,15 +4,16 @@ pragma solidity 0.8.24;
 import { ERC4626, IERC20, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+// TODO: Move these to a common definitions file
 uint256 constant SCALING_FACTOR = 1e18;
 
-contract GenericStakedAppreciatingVault is ERC4626 {
-    struct RewardTracker {
-        uint256 rewardPeriodStart;
-        uint256 rewardPeriodEnd;
-        uint256 rewardAmount;
-    }
+struct RewardTracker {
+    uint256 rewardPeriodStart;
+    uint256 rewardPeriodEnd;
+    uint256 rewardAmount;
+}
 
+contract GenericStakedAppreciatingVault is ERC4626 {
     uint256 public immutable DISTRIBUTION_PERIOD;
 
     RewardTracker public rewardTracker;
@@ -109,6 +110,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     }
 
     function _decimalsOffset() internal pure override returns (uint8) {
-        return 0; // TODO: Change this?
+        return 3; // TODO: Change this?
     }
 }

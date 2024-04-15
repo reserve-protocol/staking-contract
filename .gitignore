@@ -17,9 +17,10 @@ node_modules
 node_modules
 .env
 
-# Hardhat files
+# Hardhat & Foundry
 /cache
 /artifacts
+/out
 
 # solidity-coverage files
 /coverage
