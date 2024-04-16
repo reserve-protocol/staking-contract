@@ -2,7 +2,7 @@
 
 The Staked Appreciating Vault is a simple ERC-4626 vault that allows users to deposit their assets and earn a yield on them. The yield is distributed in the same token as the deposited asset, making the vault token appreciate in value over time.
 
-The vault distributes yield in epochs, or distribution periods. The distribution period is set at the time of vault deployment and can not be changed after. New rewards are only added to the vault at the beginning of a new epoch, and rewards are streamed to all users linearly during the distribution period.
+The vault distributes yield in epochs, or distribution periods. The distribution period is set at the time of vault deployment and can not be changed after. New rewards can be added to the vault at any time, however they will only start flowing at the beginning of the next epoch. Rewards are streamed to all users linearly during the distribution period.
 
 The epochs run automatically and yield is auto-compounded with hooks on the `deposit`/`withdraw` functions. Additionally, adding new rewards is permissionless and can be done by either directly transferring the deposit token to the vault address or by calling the `addRewards` function. Once new rewards are added to the vault, they will be distributed to all users linearly during the next epoch.
 
