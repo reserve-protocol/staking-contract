@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.24;
 
-import { ERC4626, IERC20, ERC20, IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import { ERC4626, IERC20, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -10,16 +10,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import { console2 } from "forge-std/console2.sol";
-
-// import { SafeERC20Upgradeable as SafeERC20 } from "openzeppelin-contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-// import { ERC4626Upgradeable, ERC20Upgradeable, IERC20Upgradeable as IERC20, IERC20MetadataUpgradeable as IERC20Metadata } from "openzeppelin-contracts-upgradeable/token/ERC20/extensions/ERC4626Upgradeable.sol";
-// import { MathUpgradeable as Math } from "openzeppelin-contracts-upgradeable/utils/math/MathUpgradeable.sol";
-// import { SafeCastLib } from "solmate/utils/SafeCastLib.sol";
-// import { OwnedUpgradeable } from "./OwnedUpgradeable.sol";
-// import { IMultiRewardEscrow } from "../interfaces/IMultiRewardEscrow.sol";
-// import { RewardInfo, EscrowInfo } from "../interfaces/IMultiRewardStaking.sol";
-
+// TODO: Move these to a definitions file
 struct RewardInfo {
     /// @notice scalar for the rewardToken
     uint64 ONE;
@@ -175,8 +166,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         // Add the rewardToken to all existing rewardToken
         rewardTokens.push(rewardToken);
 
-        uint8 rewardTokenDecimals = IERC20Metadata(address(rewardToken)).decimals();
-        uint64 ONE = SafeCast.toUint64(10 ** rewardTokenDecimals);
+        uint64 ONE = SafeCast.toUint64(10 ** decimals());
 
         uint224 index = rewardsPerSecond == 0 && amount != 0
             ? ONE + SafeCast.toUint224((amount * uint256(10 ** decimals())) / totalSupply())
@@ -331,10 +321,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         if (supplyTokens != 0) {
             deltaIndex = SafeCast.toUint224((uint256(accrued) * uint256(10 ** decimals())) / supplyTokens);
         }
-
-        // console2.log("1", uint256(10 ** decimals()));
-        // console2.log("2", accrued, supplyTokens);
-        // console2.log("3", deltaIndex);
 
         rewardInfos[_rewardToken].index += deltaIndex;
         rewardInfos[_rewardToken].lastUpdatedTimestamp = SafeCast.toUint32(block.timestamp);

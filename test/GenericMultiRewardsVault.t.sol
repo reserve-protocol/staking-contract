@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0
-
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
 import { Test, console2 } from "forge-std/Test.sol";
@@ -9,6 +8,9 @@ import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import { GenericMultiRewardsVault, IERC20 } from "@src/rewards/GenericMultiRewardsVault.sol";
 
+// Test Suite based on Popcorn DAO's MultiRewardStaking
+// See: https://github.com/Popcorn-Limited/contracts/blob/d029c413239735f58b0adcead11fdbe8f69a0e34/test/MultiRewardStaking.t.sol
+// Modified to work in this context.
 contract GenericMultiRewardsVaultTest is Test {
     ERC20Mock stakingToken;
     ERC20Mock rewardToken1;
@@ -28,7 +30,7 @@ contract GenericMultiRewardsVaultTest is Test {
         stakingToken = new ERC20Mock("Testing Token", "TEST", 18);
 
         rewardToken1 = new ERC20Mock("RewardsToken1", "RTKN1", 18);
-        rewardToken2 = new ERC20Mock("RewardsToken2", "RTKN2", 18); // TODO: Change to 6 decimals
+        rewardToken2 = new ERC20Mock("RewardsToken2", "RTKN2", 6);
 
         vm.label(address(rewardToken1), "RewardToken1");
         vm.label(address(rewardToken2), "RewardToken2");
