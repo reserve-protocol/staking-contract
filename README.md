@@ -18,7 +18,7 @@ The vault takes heavy inspiration from the following sources:
 
 - [Synthetix - StakingRewards](https://github.com/Synthetixio/synthetix/blob/52d37c39632e9111250d4c68b5a1d973359135c3/contracts/StakingRewards.sol)
 - [Curve - MultiRewards](https://github.com/curvefi/multi-rewards/blob/99995f90bd129bbe6b5a995daf6233fb79789e4e/contracts/MultiRewards.sol)
-- [Fei - FlywheelStaticRewards](https://github.com/fei-protocol/flywheel-v2/blob/379c7385539034aac97bc18fc4189bf683e0805c/src/rewards/FlywheelStaticRewards.sol)
+- [Fei - FlywheelStaticRewards & FlywheelCore](https://github.com/fei-protocol/flywheel-v2/blob/379c7385539034aac97bc18fc4189bf683e0805c/src/)
 - [Popcorn DAO - MultiRewardStaking](https://github.com/Popcorn-Limited/contracts/blob/d029c413239735f58b0adcead11fdbe8f69a0e34/src/utils/MultiRewardStaking.sol)
 
 This is a simplified implementation that keeps only the core functionality of the vaults and removes any additional features.
