@@ -20,7 +20,7 @@ contract GenericStakedAppreciatingVaultTest is Test {
 
     function setUp() public {
         vm.startPrank(DEPLOYER);
-        token = new ERC20Mock("Test Token", "TEST");
+        token = new ERC20Mock("Test Token", "TEST", 18);
         vault = new GenericStakedAppreciatingVault("Staked Test Token", "sTEST", IERC20(address(token)), 7 days);
 
         vaultDecimals = vault.decimals();
