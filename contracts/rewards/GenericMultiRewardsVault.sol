@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.24;
 
-import { ERC4626, IERC20, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import { ERC4626, IERC20, IERC20Metadata, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -10,20 +9,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-// TODO: Move these to a definitions file
-struct RewardInfo {
-    /// @notice scalar for the rewardToken
-    uint64 ONE;
-    /// @notice Rewards per second
-    uint160 rewardsPerSecond;
-    /// @notice The timestamp the rewards end at
-    /// @dev use 0 to specify no end
-    uint32 rewardsEndTimestamp;
-    /// @notice The strategy's last updated index
-    uint224 index;
-    /// @notice The timestamp the index was last updated at
-    uint32 lastUpdatedTimestamp;
-}
+import { RewardInfo, Errors, Events } from "./definitions.sol";
 
 contract GenericMultiRewardsVault is ERC4626, Ownable {
     constructor(
@@ -90,10 +76,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
                             CLAIM LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    event RewardsClaimed(address indexed user, IERC20 rewardToken, uint256 amount);
-
-    error ZeroRewards(IERC20 rewardToken);
-
     /**
      * @notice Claim rewards for a user in any amount of rewardTokens.
      * @param user User for which rewards should be claimed.
@@ -105,13 +87,13 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             uint256 rewardAmount = accruedRewards[user][_rewardTokens[i]];
 
             if (rewardAmount == 0) {
-                revert ZeroRewards(_rewardTokens[i]);
+                revert Errors.ZeroRewards(_rewardTokens[i]);
             }
 
             accruedRewards[user][_rewardTokens[i]] = 0;
             _rewardTokens[i].transfer(user, rewardAmount);
 
-            emit RewardsClaimed(user, _rewardTokens[i], rewardAmount);
+            emit Events.RewardsClaimed(user, _rewardTokens[i], rewardAmount);
         }
     }
 
@@ -125,17 +107,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     mapping(address user => mapping(IERC20 rewardToken => uint256 rewardIndex)) public userIndex;
     mapping(address user => mapping(IERC20 rewardToken => uint256 accruedRewards)) public accruedRewards;
 
-    event RewardInfoUpdate(IERC20 rewardToken, uint160 rewardsPerSecond, uint32 rewardsEndTimestamp);
-
-    error RewardTokenAlreadyExist(IERC20 rewardToken);
-    error RewardTokenDoesntExist(IERC20 rewardToken);
-    error RewardTokenCantBeStakingToken();
-    error ZeroAmount();
-    error NotSubmitter(address submitter);
-    error RewardsAreDynamic(IERC20 rewardToken);
-    error ZeroRewardsSpeed();
-    error InvalidConfig();
-
     /**
      * @notice Adds a new rewardToken which can be earned via staking. Caller must be owner.
      * @param rewardToken Token that can be earned by staking.
@@ -145,45 +116,46 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
      * @dev If `rewardsPerSecond` is 0 the rewards will be paid out instantly. In this case `amount` must be 0.
      * @dev If `useEscrow` is `false` the `escrowDuration`, `escrowPercentage` and `offset` will be ignored.
      */
-    function addRewardToken(IERC20 rewardToken, uint160 rewardsPerSecond, uint256 amount) external onlyOwner {
+    function addRewardToken(IERC20Metadata rewardToken, uint256 rewardsPerSecond, uint256 amount) external onlyOwner {
         if (asset() == address(rewardToken)) {
-            revert RewardTokenCantBeStakingToken();
+            revert Errors.RewardTokenCanNotBeStakingToken();
         }
 
         RewardInfo memory rewards = rewardInfos[rewardToken];
         if (rewards.lastUpdatedTimestamp > 0) {
-            revert RewardTokenAlreadyExist(rewardToken);
+            revert Errors.RewardTokenAlreadyExist(rewardToken);
         }
 
         if (amount > 0) {
             if (rewardsPerSecond == 0) {
-                revert ZeroRewardsSpeed();
+                revert Errors.ZeroRewardsSpeed();
             }
 
             SafeERC20.safeTransferFrom(rewardToken, msg.sender, address(this), amount);
         }
 
-        // Add the rewardToken to all existing rewardToken
         rewardTokens.push(rewardToken);
 
-        uint64 ONE = SafeCast.toUint64(10 ** decimals());
+        uint8 rewardTokenDecimals = rewardToken.decimals();
 
-        uint224 index = rewardsPerSecond == 0 && amount != 0
-            ? ONE + SafeCast.toUint224((amount * uint256(10 ** decimals())) / totalSupply())
+        uint256 ONE = 10 ** rewardTokenDecimals;
+        uint256 index = rewardsPerSecond == 0 && amount != 0
+            ? ONE + ((amount * uint256(10 ** decimals())) / totalSupply())
             : ONE;
-        uint32 rewardsEndTimestamp = rewardsPerSecond == 0
-            ? SafeCast.toUint32(block.timestamp)
+        uint48 rewardsEndTimestamp = rewardsPerSecond == 0
+            ? SafeCast.toUint48(block.timestamp)
             : _calcRewardsEnd(0, rewardsPerSecond, amount);
 
         rewardInfos[rewardToken] = RewardInfo({
-            ONE: ONE,
-            rewardsPerSecond: rewardsPerSecond,
+            decimals: rewardTokenDecimals,
             rewardsEndTimestamp: rewardsEndTimestamp,
+            lastUpdatedTimestamp: SafeCast.toUint48(block.timestamp),
+            rewardsPerSecond: rewardsPerSecond,
             index: index,
-            lastUpdatedTimestamp: SafeCast.toUint32(block.timestamp)
+            ONE: ONE
         });
 
-        emit RewardInfoUpdate(rewardToken, rewardsPerSecond, rewardsEndTimestamp);
+        emit Events.RewardInfoUpdate(rewardToken, rewardsPerSecond, rewardsEndTimestamp);
     }
 
     /**
@@ -192,17 +164,17 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
      * @param rewardsPerSecond The rate in which `rewardToken` will be accrued.
      * @dev The `rewardsEndTimestamp` gets calculated based on `rewardsPerSecond` and `amount`.
      */
-    function changeRewardSpeed(IERC20 rewardToken, uint160 rewardsPerSecond) external onlyOwner {
+    function changeRewardSpeed(IERC20 rewardToken, uint256 rewardsPerSecond) external onlyOwner {
         RewardInfo memory rewards = rewardInfos[rewardToken];
 
         if (rewardsPerSecond == 0) {
-            revert ZeroAmount();
+            revert Errors.ZeroAmount();
         }
         if (rewards.lastUpdatedTimestamp == 0) {
-            revert RewardTokenDoesntExist(rewardToken);
+            revert Errors.RewardTokenDoesNotExist(rewardToken);
         }
         if (rewards.rewardsPerSecond == 0) {
-            revert RewardsAreDynamic(rewardToken);
+            revert Errors.RewardsAreDynamic(rewardToken);
         }
 
         _accrueRewards(rewardToken, _accrueStatic(rewards));
@@ -211,7 +183,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         uint256 remainder = prevEndTime <= block.timestamp
             ? 0
             : uint256(rewards.rewardsPerSecond) * (prevEndTime - block.timestamp);
-        uint32 rewardsEndTimestamp = _calcRewardsEnd(SafeCast.toUint32(block.timestamp), rewardsPerSecond, remainder);
+        uint48 rewardsEndTimestamp = _calcRewardsEnd(SafeCast.toUint48(block.timestamp), rewardsPerSecond, remainder);
 
         rewardInfos[rewardToken].rewardsPerSecond = rewardsPerSecond;
         rewardInfos[rewardToken].rewardsEndTimestamp = rewardsEndTimestamp;
@@ -226,47 +198,42 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
      */
     function fundReward(IERC20 rewardToken, uint256 amount) external {
         if (amount == 0) {
-            revert ZeroAmount();
+            revert Errors.ZeroAmount();
         }
 
-        // Cache RewardInfo
         RewardInfo memory rewards = rewardInfos[rewardToken];
 
         if (rewards.rewardsPerSecond == 0 && totalSupply() == 0) {
-            revert InvalidConfig();
+            revert Errors.InvalidConfig();
         }
 
-        // Make sure that the reward exists
         if (rewards.lastUpdatedTimestamp == 0) {
-            revert RewardTokenDoesntExist(rewardToken);
+            revert Errors.RewardTokenDoesNotExist(rewardToken);
         }
 
-        // Transfer additional rewardToken to fund rewards of this vault
         SafeERC20.safeTransferFrom(rewardToken, msg.sender, address(this), amount);
 
-        uint256 accrued = rewards.rewardsPerSecond == 0 ? amount : _accrueStatic(rewards);
+        _accrueRewards(rewardToken, rewards.rewardsPerSecond == 0 ? amount : _accrueStatic(rewards));
 
-        // Update the index of rewardInfo before updating the rewardInfo
-        _accrueRewards(rewardToken, accrued);
-        uint32 rewardsEndTimestamp = rewards.rewardsEndTimestamp;
+        uint48 rewardsEndTimestamp = rewards.rewardsEndTimestamp;
         if (rewards.rewardsPerSecond > 0) {
             rewardsEndTimestamp = _calcRewardsEnd(rewards.rewardsEndTimestamp, rewards.rewardsPerSecond, amount);
             rewardInfos[rewardToken].rewardsEndTimestamp = rewardsEndTimestamp;
         }
 
-        emit RewardInfoUpdate(rewardToken, rewards.rewardsPerSecond, rewardsEndTimestamp);
+        emit Events.RewardInfoUpdate(rewardToken, rewards.rewardsPerSecond, rewardsEndTimestamp);
     }
 
     function _calcRewardsEnd(
-        uint32 rewardsEndTimestamp,
-        uint160 rewardsPerSecond,
+        uint48 rewardsEndTimestamp,
+        uint256 rewardsPerSecond,
         uint256 amount
-    ) internal view returns (uint32) {
+    ) internal view returns (uint48) {
         if (rewardsEndTimestamp > block.timestamp) {
-            amount += uint256(rewardsPerSecond) * (rewardsEndTimestamp - block.timestamp);
+            amount += rewardsPerSecond * (rewardsEndTimestamp - block.timestamp);
         }
 
-        return SafeCast.toUint32(block.timestamp + (amount / uint256(rewardsPerSecond)));
+        return SafeCast.toUint48(block.timestamp + (amount / uint256(rewardsPerSecond)));
     }
 
     function getAllRewardsTokens() external view returns (IERC20[] memory) {
@@ -290,7 +257,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
 
             _accrueUser(_receiver, rewardToken);
 
-            // If a deposit/withdraw operation gets called for another user we should accrue for both of them to avoid potential issues like in the Convex-Vulnerability
+            // If a deposit/withdraw operation gets called for another user we should accrue for both of them to avoid potential issues
             if (_receiver != _caller) {
                 _accrueUser(_caller, rewardToken);
             }
@@ -316,35 +283,35 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     /// @notice Accrue global rewards for a rewardToken
     function _accrueRewards(IERC20 _rewardToken, uint256 accrued) internal {
         uint256 supplyTokens = totalSupply();
-        uint224 deltaIndex;
+        uint256 deltaIndex;
 
         if (supplyTokens != 0) {
-            deltaIndex = SafeCast.toUint224((uint256(accrued) * uint256(10 ** decimals())) / supplyTokens);
+            deltaIndex = (accrued * uint256(10 ** decimals())) / supplyTokens;
         }
 
         rewardInfos[_rewardToken].index += deltaIndex;
-        rewardInfos[_rewardToken].lastUpdatedTimestamp = SafeCast.toUint32(block.timestamp);
+        rewardInfos[_rewardToken].lastUpdatedTimestamp = SafeCast.toUint48(block.timestamp);
     }
 
     /// @notice Sync a user's rewards for a rewardToken with the global reward index for that token
     function _accrueUser(address _user, IERC20 _rewardToken) internal {
-        RewardInfo memory rewards = rewardInfos[_rewardToken];
+        RewardInfo memory rewardIndex = rewardInfos[_rewardToken];
 
         uint256 oldIndex = userIndex[_user][_rewardToken];
 
         // If user hasn't yet accrued rewards, grant them interest from the strategy beginning if they have a balance
         // Zero balances will have no effect other than syncing to global index
         if (oldIndex == 0) {
-            oldIndex = rewards.ONE;
+            oldIndex = rewardIndex.ONE;
         }
 
-        uint256 deltaIndex = rewards.index - oldIndex;
+        uint256 deltaIndex = rewardIndex.index - oldIndex;
 
         // Accumulate rewards by multiplying user tokens by rewardsPerToken index and adding on unclaimed
         uint256 supplierDelta = (balanceOf(_user) * deltaIndex) / uint256(10 ** decimals());
         // stakeDecimals  * rewardDecimals / stakeDecimals = rewardDecimals
 
-        userIndex[_user][_rewardToken] = rewards.index;
+        userIndex[_user][_rewardToken] = rewardIndex.index;
         accruedRewards[_user][_rewardToken] += supplierDelta;
     }
 }
