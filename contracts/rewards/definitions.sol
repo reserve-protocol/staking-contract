@@ -25,6 +25,9 @@ abstract contract Errors {
     error RewardsAreDynamic(IERC20 rewardToken);
     error ZeroRewardsSpeed();
     error InvalidConfig();
+
+    // Transfers
+    error NotAllowed();
 }
 
 abstract contract Events {
