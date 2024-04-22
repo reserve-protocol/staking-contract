@@ -27,22 +27,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         return shares;
     }
 
-    function deposit(uint256 _amount) external returns (uint256) {
-        return deposit(_amount, msg.sender);
-    }
-
-    function mint(uint256 _amount) external returns (uint256) {
-        return mint(_amount, msg.sender);
-    }
-
-    function withdraw(uint256 _amount) external returns (uint256) {
-        return withdraw(_amount, msg.sender, msg.sender);
-    }
-
-    function redeem(uint256 _amount) external returns (uint256) {
-        return redeem(_amount, msg.sender, msg.sender);
-    }
-
     function _deposit(
         address caller,
         address receiver,

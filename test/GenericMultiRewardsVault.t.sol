@@ -7,7 +7,7 @@ import { ERC20Mock } from "@test/mocks/ERC20Mock.sol";
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import { GenericMultiRewardsVault, IERC20, IERC20Metadata } from "@src/rewards/GenericMultiRewardsVault.sol";
-import { Errors, Events } from "@src/rewards/Definitions.sol";
+import { Errors, Events } from "@src/rewards/definitions.sol";
 
 // Test Suite based on Popcorn DAO's MultiRewardStaking
 // See: https://github.com/Popcorn-Limited/contracts/blob/d029c413239735f58b0adcead11fdbe8f69a0e34/test/MultiRewardStaking.t.sol
@@ -213,13 +213,13 @@ contract GenericMultiRewardsVaultTest is Test {
 
         vm.startPrank(alice);
         stakingToken.approve(address(staking), 5 ether);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         // 10% of rewards paid out
         vm.warp(block.timestamp + 10);
 
         uint256 callTimestamp = block.timestamp;
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
         // console2.log(index);
@@ -235,7 +235,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.warp(block.timestamp + 10);
 
         callTimestamp = block.timestamp;
-        staking.mint(2 ether);
+        staking.mint(2 ether, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
         assertEq(uint256(index), (25 * ONE) / 10);
@@ -248,7 +248,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.warp(block.timestamp + 70);
 
         callTimestamp = block.timestamp;
-        staking.withdraw(2 ether);
+        staking.withdraw(2 ether, alice, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
         assertEq(uint256(index), (425 * ONE) / 100);
@@ -261,7 +261,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.warp(block.timestamp + 10);
 
         callTimestamp = block.timestamp;
-        staking.redeem(1 ether);
+        staking.redeem(1 ether, alice, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
         assertEq(uint256(index), (475 * ONE) / 100);
@@ -277,12 +277,12 @@ contract GenericMultiRewardsVaultTest is Test {
 
         vm.startPrank(alice);
         stakingToken.approve(address(staking), 5 ether);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         vm.warp(block.timestamp + 10);
 
         uint256 callTimestamp = block.timestamp;
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         // RewardsToken 1 -- 10% accrued
         (, , uint48 lastUpdatedTimestampReward1, , uint256 indexReward1, uint256 reward1ONE) = staking.rewardInfos(
@@ -302,7 +302,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.warp(block.timestamp + 10);
 
         callTimestamp = block.timestamp;
-        staking.deposit(2 ether);
+        staking.deposit(2 ether, alice);
 
         // RewardsToken 1 -- 20% accrued
         (, , lastUpdatedTimestampReward1, , indexReward1, ) = staking.rewardInfos(iRewardToken1);
@@ -325,7 +325,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.warp(block.timestamp + 80);
 
         callTimestamp = block.timestamp;
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         // RewardsToken 1 -- 100% accrued
         (, , lastUpdatedTimestampReward1, , indexReward1, ) = staking.rewardInfos(iRewardToken1);
@@ -354,7 +354,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         vm.startPrank(alice);
         stakingToken.approve(address(staking), 5 ether);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         // 10% of rewards paid out
         vm.warp(block.timestamp + 10);
@@ -378,7 +378,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         vm.startPrank(alice);
         stakingToken.approve(address(staking), 2 ether);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
         vm.stopPrank();
 
         // 100% of rewards paid out
@@ -386,7 +386,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         uint256 callTimestamp = block.timestamp;
         vm.prank(alice);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
         assertEq(uint256(index), 11 * ONE);
@@ -400,7 +400,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         callTimestamp = block.timestamp;
         vm.prank(alice);
-        staking.withdraw(1 ether);
+        staking.withdraw(1 ether, alice, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
         assertEq(uint256(index), 11 * ONE);
@@ -422,7 +422,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.warp(block.timestamp + 10);
 
         uint256 callTimestamp = block.timestamp;
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
         // Accrual doesnt start until someone deposits -- TODO does this change some of the rewardsEnd and rewardsSpeed assumptions?
@@ -451,11 +451,11 @@ contract GenericMultiRewardsVaultTest is Test {
         // 80% of rewards paid out
         vm.warp(block.timestamp + 70);
 
-        staking.withdraw((5 * ONE) / 10);
+        staking.withdraw((5 * ONE) / 10, alice, alice);
         vm.stopPrank();
         vm.prank(bob);
         callTimestamp = block.timestamp;
-        staking.withdraw((5 * ONE) / 10);
+        staking.withdraw((5 * ONE) / 10, bob, bob);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
         assertEq(uint256(index), ONE + (ONE * 10) / 3);
@@ -621,7 +621,7 @@ contract GenericMultiRewardsVaultTest is Test {
         stakingToken.approve(address(staking), 1 ether);
 
         vm.prank(alice);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         // 10% of rewards paid out
         vm.warp(block.timestamp + 10);
@@ -633,13 +633,13 @@ contract GenericMultiRewardsVaultTest is Test {
         // Half Accrual (from original)
         staking.changeRewardSpeed(iRewardToken1, (5 * ONE) / 100);
         vm.prank(bob);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, bob);
 
         // 50% of rewards paid out
         vm.warp(block.timestamp + 40);
 
         vm.prank(alice);
-        staking.withdraw(1 ether);
+        staking.withdraw(1 ether, alice, alice);
 
         // Check Alice RewardsState
         (, , uint48 lastUpdatedTimestamp, , uint256 index, ) = staking.rewardInfos(iRewardToken1);
@@ -649,7 +649,7 @@ contract GenericMultiRewardsVaultTest is Test {
         assertEq(staking.accruedRewards(alice, iRewardToken1), 4 * ONE);
 
         vm.prank(bob);
-        staking.withdraw(1 ether);
+        staking.withdraw(1 ether, bob, bob);
 
         // Check Bobs RewardsState
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
@@ -667,7 +667,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.prank(alice);
         stakingToken.approve(address(staking), 1 ether);
         vm.prank(alice);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         (, uint48 rewardsEndTimestamp, , , , uint256 ONE) = staking.rewardInfos(iRewardToken1);
         // StartTime 1, Rewards 10e18, RewardsPerSecond 0.1e18, RewardsEndTimeStamp 101
@@ -740,7 +740,7 @@ contract GenericMultiRewardsVaultTest is Test {
         stakingToken.mint(address(this), 1 ether);
         stakingToken.approve(address(staking), 1 ether);
 
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, address(this));
 
         (, uint48 oldRewardsEndTimestamp, , , , ) = staking.rewardInfos(iRewardToken1);
 
@@ -815,7 +815,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         vm.startPrank(alice);
         stakingToken.approve(address(staking), 5 ether);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
 
         // 10% of rewards paid out
         vm.warp(block.timestamp + 10);
@@ -841,7 +841,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         vm.startPrank(alice);
         stakingToken.approve(address(staking), 1 ether);
-        staking.deposit(1 ether);
+        staking.deposit(1 ether, alice);
         vm.stopPrank();
 
         staking.fundReward(iRewardToken1, 5 ether);
