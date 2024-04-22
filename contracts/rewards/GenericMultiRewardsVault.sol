@@ -73,7 +73,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             }
 
             accruedRewards[user][_rewardTokens[i]] = 0;
-            _rewardTokens[i].transfer(user, rewardAmount);
+            SafeERC20.safeTransfer(_rewardTokens[i], user, rewardAmount);
 
             emit Events.RewardsClaimed(user, _rewardTokens[i], rewardAmount);
         }
