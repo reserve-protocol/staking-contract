@@ -7,9 +7,9 @@ struct RewardInfo {
     uint8 decimals; // Reward Token Decimals
     uint48 rewardsEndTimestamp; // {s} Rewards End Timestamp; 0 = instant
     uint48 lastUpdatedTimestamp; // {s} Last updated timestamp
-    uint256 rewardsPerSecond; // {qTok/s} Rewards per Second
-    uint256 index; // {qTok} Last updated reward index
-    uint256 ONE; // {qTok} Reward Token Scalar
+    uint256 rewardsPerSecond; // {qRewardTok/s} Rewards per Second
+    uint256 index; // {qRewardTok} Last updated reward index
+    uint256 ONE; // {qRewardTok} Reward Token Scalar
 }
 
 abstract contract Errors {
