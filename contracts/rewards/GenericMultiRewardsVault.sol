@@ -311,7 +311,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     /// @param accrued {qRewardTok}
     function _accrueRewards(IERC20 _rewardToken, uint256 accrued) internal {
         uint256 supplyTokens = totalSupply();
-        uint256 deltaIndex; // {}
+        uint256 deltaIndex;
 
         if (supplyTokens != 0) {
             // {qRewardTok} = {qRewardTok} * {qShare} / {qShare}
