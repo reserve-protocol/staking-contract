@@ -11,7 +11,6 @@ contract GenericStakedAppreciatingVaultDeployer is Script {
     function run() public {
         string memory seedPhrase = vm.readFile(".seed");
         uint256 privateKey = vm.deriveKey(seedPhrase, 0);
-        address walletAddress = vm.rememberKey(privateKey);
 
         vm.startBroadcast(privateKey);
 
