@@ -14,14 +14,13 @@ struct RewardTracker {
 
 /*
  * @title GenericMultiRewardsVault
- * @notice Transferrable ERC4626 vault with linear reward streaming in the vault's asset token
- * 
- * The only reward token is the asset itself. Adding rewards is permisionless. 
- * 
- * Asset tokens accidentally transferred into the contract will be picked up as part of 
- * the next week distribution period. 
- * 
- * Unit notation
+ * @notice Transferrable ERC4626 vault with linear reward streaming in the vault's asset token.
+ *         The only reward token is the asset itself. Adding rewards is permisionless.
+ * @dev Asset tokens transferred into the contract without `deposit` will be picked up as part of
+ *      the next week distribution period. Any token transferred into the contract that is not
+ *      the asset token will be lost forever.
+ *
+ * Unit Notation
  *   - {qAsset} = Asset token quanta
  *   - {qShare} = Share token quanta
  *   - {s} = Seconds
@@ -35,7 +34,12 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     event RewardAdded(uint256 reward, uint256 periodStart, uint256 periodEnd);
     event RewardDistributionUpdated(uint256 periodStart, uint256 periodEnd, uint256 amount);
 
-    /// @param _distributionPeriod {s} Distribution Period for Accumulated Rewards
+    /**
+     * @param _name Vault Name
+     * @param _symbol Vault Symbol
+     * @param _underlying {qAsset} Asset Token
+     * @param _distributionPeriod {s} Distribution Period for Accumulated Rewards
+     */
     constructor(
         string memory _name,
         string memory _symbol,
@@ -78,7 +82,9 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         );
     }
 
-    /// @return {qAsset}
+    /**
+     * @return {qAsset}
+     */
     function totalAssets() public view override returns (uint256) {
         // {qAsset} = {qAsset} + {qAsset}
         return totalDeposited + _currentAccountedRewards();
@@ -96,7 +102,9 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         emit RewardAdded(rewardTracker.rewardAmount, rewardTracker.rewardPeriodStart, rewardTracker.rewardPeriodEnd);
     }
 
-    /// @return {qAsset}
+    /**
+     * @return {qAsset}
+     */
     function _currentAccountedRewards() internal view returns (uint256) {
         if (block.timestamp >= rewardTracker.rewardPeriodEnd) {
             return rewardTracker.rewardAmount;
@@ -134,6 +142,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     }
 
     function _decimalsOffset() internal pure override returns (uint8) {
-        return 3; // TODO: Change this?
+        return 3;
     }
 }

@@ -21,7 +21,6 @@ abstract contract Errors {
     error RewardTokenDoesNotExist(IERC20 rewardToken);
     error RewardTokenCanNotBeStakingToken();
     error ZeroAmount();
-    error NotSubmitter(address submitter);
     error RewardsAreDynamic(IERC20 rewardToken);
     error ZeroRewardsSpeed();
     error InvalidConfig();

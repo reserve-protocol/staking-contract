@@ -11,15 +11,13 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import { RewardInfo, Errors, Events } from "./definitions.sol";
 
-/*
+/**
  * @title GenericMultiRewardsVault
- * @notice Non-transferrable ERC4626 vault that allows streaming of rewards in multiple tokens
- * @dev Reward tokens transferred by accident without using fundReward() will be lost!
- * 
- * Registering new reward tokens is permissioned, but adding funds is permissionless
- * 
- * No appreciation; exchange rate is always 1:1 with underlying
- * 
+ * @notice Non-transferrable ERC4626 vault that allows streaming of rewards in multiple other tokens
+ * @dev Reward tokens transferred by accident without using `fundReward()` will be lost!
+ *      Registering new reward tokens is permissioned, but adding funds is permissionless.
+ *      No appreciation; exchange rate is always 1:1 with underlying.
+
  * Unit notation
  *   - {qRewardTok} = Reward token quanta
  *   - {qAsset} = Asset token quanta
@@ -34,9 +32,12 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         address initialOwner
     ) ERC4626(_underlying) ERC20(_name, _symbol) Ownable(initialOwner) {}
 
-    /*
-     ** Core Vault Functionality
+    /**
+     * Core Vault Functionality
      */
+    function decimals() public view override returns (uint8) {
+        return IERC20Metadata(asset()).decimals();
+    }
 
     function _convertToShares(uint256 assets, Math.Rounding) internal pure override returns (uint256) {
         return assets;
@@ -65,7 +66,9 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         super._withdraw(caller, receiver, owner_, assets, shares);
     }
 
-    /// @dev Prevent transfer
+    /**
+     * @dev Prevent transfer
+     */
     function _update(address from, address to, uint256 amount) internal virtual override {
         if (from != address(0) && to != address(0)) {
             revert Errors.NotAllowed();
@@ -74,8 +77,8 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         super._update(from, to, amount);
     }
 
-    /*
-     ** Rewards: Claim Logic
+    /**
+     * Rewards: Claim Logic
      */
 
     /**
@@ -99,10 +102,9 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         }
     }
 
-    /*
-     ** Rewards: Management
+    /**
+     * Rewards: Management
      */
-
     IERC20[] public rewardTokens;
     mapping(IERC20 rewardToken => RewardInfo rewardInfo) public rewardInfos;
     mapping(IERC20 rewardToken => address distributor) public distributorInfo;
@@ -118,6 +120,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
      * @param amount {qRewardTok} Initial funding amount for this reward.
      * @dev The `rewardsEndTimestamp` gets calculated based on `rewardsPerSecond` and `amount`.
      * @dev If `rewardsPerSecond` is 0 the rewards will be paid out instantly. In this case `amount` must be 0.
+     *      This is useful for dynamic rewards, where the rewards are controlled by an external contract.
      */
     function addRewardToken(
         IERC20Metadata rewardToken,
@@ -134,7 +137,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             revert Errors.RewardTokenAlreadyExist(rewardToken);
         }
 
-        if (amount > 0) {
+        if (amount != 0) {
             if (rewardsPerSecond == 0) {
                 revert Errors.ZeroRewardsSpeed();
             }
@@ -165,7 +168,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     }
 
     /**
-     * @notice Updates distributor for the rewardToken
+     * @notice Updates distributor for `rewardToken`
      * @param rewardToken Token that can be earned by staking.
      * @param distributor Distributor with the ability to control rewards for this token.
      * @dev Callable by owner or distributor themselves.
@@ -252,10 +255,12 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         emit Events.RewardInfoUpdate(rewardToken, rewards.rewardsPerSecond, rewardsEndTimestamp);
     }
 
-    /// @param rewardsEndTimestamp {s}
-    /// @param rewardsPerSecond {qRewardTok/s}
-    /// @param amount {qRewardTok}
-    /// @return {s}
+    /**
+     * @param rewardsEndTimestamp {s}
+     * @param rewardsPerSecond {qRewardTok/s}
+     * @param amount {qRewardTok}
+     * @return {s}
+     */
     function _calcRewardsEnd(
         uint48 rewardsEndTimestamp,
         uint256 rewardsPerSecond,
@@ -295,8 +300,10 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         _;
     }
 
-    /// @notice Accrue rewards over time.
-    /// @return accrued {qRewardTok}
+    /**
+     * @notice Accrue rewards over time.
+     * @return accrued {qRewardTok}
+     */
     function _accrueStatic(RewardInfo memory rewards) internal view returns (uint256 accrued) {
         uint256 elapsed;
         if (rewards.rewardsEndTimestamp > block.timestamp) {
@@ -309,8 +316,10 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         accrued = uint256(rewards.rewardsPerSecond * elapsed);
     }
 
-    /// @notice Accrue global rewards for a rewardToken
-    /// @param accrued {qRewardTok}
+    /**
+     * @notice Accrue global rewards for a rewardToken
+     * @param accrued {qRewardTok}
+     */
     function _accrueRewards(IERC20 _rewardToken, uint256 accrued) internal {
         uint256 supplyTokens = totalSupply();
         uint256 deltaIndex;
@@ -325,7 +334,9 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         rewardInfos[_rewardToken].lastUpdatedTimestamp = SafeCast.toUint48(block.timestamp);
     }
 
-    /// @notice Sync a user's rewards for a rewardToken with the global reward index for that token
+    /**
+     * @notice Sync a user's rewards for a rewardToken with the global reward index for that token
+     */
     function _accrueUser(address _user, IERC20 _rewardToken) internal {
         RewardInfo memory rewardIndex = rewardInfos[_rewardToken];
 
@@ -342,7 +353,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         // Accumulate rewards by multiplying user tokens by rewardsPerToken index and adding on unclaimed
         // {qRewardTok} = {qShare} * {qRewardTok} / {qShare}
         uint256 supplierDelta = (balanceOf(_user) * deltaIndex) / uint256(10 ** decimals());
-
 
         // {qRewardTok} += {qRewardTok}
         accruedRewards[_user][_rewardToken] += supplierDelta;
