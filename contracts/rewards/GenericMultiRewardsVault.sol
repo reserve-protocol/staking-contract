@@ -11,6 +11,14 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import { RewardInfo, Errors, Events } from "./definitions.sol";
 
+/*
+ * @title GenericMultiRewardsVault
+ * @notice Non-transferrable ERC4626 vault that allows streaming of rewards in multiple tokens
+ * 
+ * Registering new reward tokens is permissioned, but adding funds is permissionless
+ * 
+ * No appreciation; exchange rate is always 1:1 with underlying
+ */
 contract GenericMultiRewardsVault is ERC4626, Ownable {
     constructor(
         string memory _name,

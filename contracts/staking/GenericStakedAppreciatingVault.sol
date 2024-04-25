@@ -12,6 +12,12 @@ struct RewardTracker {
     uint256 rewardAmount;
 }
 
+/*
+ * @title GenericMultiRewardsVault
+ * @notice Transferrable ERC4626 vault with linear reward streaming in the vault's asset token
+ * 
+ * The only reward token is the asset itself. Adding rewards is permisionless. 
+ */
 contract GenericStakedAppreciatingVault is ERC4626 {
     uint256 public immutable DISTRIBUTION_PERIOD;
 
