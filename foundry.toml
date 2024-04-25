@@ -12,6 +12,10 @@
     src = "contracts"
     test = "test"
     script = "script"
+    fs_permissions = [{ access = "read", path = "./" }]
 
 [profile.ci]
     fuzz = { runs = 10_000 }
+
+[rpc_endpoints]
+    mainnet = "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
