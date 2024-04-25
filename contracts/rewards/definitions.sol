@@ -4,12 +4,12 @@ pragma solidity 0.8.24;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 
 struct RewardInfo {
-    uint8 decimals; // {1} Reward Token Decimals
+    uint8 decimals; // Reward Token Decimals
     uint48 rewardsEndTimestamp; // {s} Rewards End Timestamp; 0 = instant
     uint48 lastUpdatedTimestamp; // {s} Last updated timestamp
-    uint256 rewardsPerSecond; // {1} Rewards per Second
-    uint256 index; // {1} Last updated reward index
-    uint256 ONE; // {1} Reward Token Scalar
+    uint256 rewardsPerSecond; // {qRewardTok/s} Rewards per Second
+    uint256 index; // {qRewardTok} Last updated reward index
+    uint256 ONE; // {qRewardTok} Reward Token Scalar
 }
 
 abstract contract Errors {

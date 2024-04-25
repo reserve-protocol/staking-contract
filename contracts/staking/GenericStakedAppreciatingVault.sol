@@ -7,25 +7,40 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 uint256 constant SCALING_FACTOR = 1e18;
 
 struct RewardTracker {
-    uint256 rewardPeriodStart;
-    uint256 rewardPeriodEnd;
-    uint256 rewardAmount;
+    uint256 rewardPeriodStart; // {s}
+    uint256 rewardPeriodEnd; // {s}
+    uint256 rewardAmount; // {qAsset}
 }
 
+/*
+ * @title GenericMultiRewardsVault
+ * @notice Transferrable ERC4626 vault with linear reward streaming in the vault's asset token
+ * 
+ * The only reward token is the asset itself. Adding rewards is permisionless. 
+ * 
+ * Asset tokens accidentally transferred into the contract will be picked up as part of 
+ * the next week distribution period. 
+ * 
+ * Unit notation
+ *   - {qAsset} = Asset token quanta
+ *   - {qShare} = Share token quanta
+ *   - {s} = Seconds
+ */
 contract GenericStakedAppreciatingVault is ERC4626 {
-    uint256 public immutable DISTRIBUTION_PERIOD;
+    uint256 public immutable DISTRIBUTION_PERIOD; // {s}
 
     RewardTracker public rewardTracker;
-    uint256 private totalDeposited;
+    uint256 private totalDeposited; // {qAsset}
 
     event RewardAdded(uint256 reward, uint256 periodStart, uint256 periodEnd);
     event RewardDistributionUpdated(uint256 periodStart, uint256 periodEnd, uint256 amount);
 
+    /// @param _distributionPeriod {s} Distribution Period for Accumulated Rewards
     constructor(
         string memory _name,
         string memory _symbol,
         IERC20 _underlying,
-        uint256 _distributionPeriod // {s} Distribution Period for Accumulated Rewards
+        uint256 _distributionPeriod
     ) ERC4626(_underlying) ERC20(_name, _symbol) {
         DISTRIBUTION_PERIOD = _distributionPeriod;
 
@@ -49,7 +64,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
 
             uint256 allAvailableAssets = _asset.balanceOf(address(this));
             uint256 rewardsToBeDistributed = allAvailableAssets - totalDeposited;
-
             rewardTracker.rewardPeriodEnd = block.timestamp + DISTRIBUTION_PERIOD;
             rewardTracker.rewardAmount = rewardsToBeDistributed;
         }
@@ -64,7 +78,9 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         );
     }
 
+    /// @return {qAsset}
     function totalAssets() public view override returns (uint256) {
+        // {qAsset} = {qAsset} + {qAsset}
         return totalDeposited + _currentAccountedRewards();
     }
 
@@ -80,6 +96,7 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         emit RewardAdded(rewardTracker.rewardAmount, rewardTracker.rewardPeriodStart, rewardTracker.rewardPeriodEnd);
     }
 
+    /// @return {qAsset}
     function _currentAccountedRewards() internal view returns (uint256) {
         if (block.timestamp >= rewardTracker.rewardPeriodEnd) {
             return rewardTracker.rewardAmount;
@@ -87,10 +104,12 @@ contract GenericStakedAppreciatingVault is ERC4626 {
 
         uint256 previousDistributionPeriod = rewardTracker.rewardPeriodEnd - rewardTracker.rewardPeriodStart;
         uint256 timePassed = block.timestamp - rewardTracker.rewardPeriodStart;
+
+        // D18{1} = {s} * D18 / {s}
         uint256 timePassedPercentage = (timePassed * SCALING_FACTOR) / previousDistributionPeriod;
 
+        // {qAsset} = {qAsset} * D18{1} / D18
         uint256 accountedRewards = (rewardTracker.rewardAmount * timePassedPercentage) / SCALING_FACTOR;
-
         return accountedRewards;
     }
 
