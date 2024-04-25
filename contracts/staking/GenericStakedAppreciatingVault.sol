@@ -4,7 +4,6 @@ pragma solidity 0.8.24;
 import { ERC4626, IERC20, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// TODO: Move these to a common definitions file
 uint256 constant SCALING_FACTOR = 1e18;
 
 struct RewardTracker {
@@ -20,6 +19,7 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     uint256 private totalDeposited;
 
     event RewardAdded(uint256 reward, uint256 periodStart, uint256 periodEnd);
+    event RewardDistributionUpdated(uint256 periodStart, uint256 periodEnd, uint256 amount);
 
     constructor(
         string memory _name,
@@ -33,7 +33,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     }
 
     function _updateRewards() internal {
-        // TODO: No tracking when totalSupply() == 0
         IERC20 _asset = IERC20(asset());
 
         uint256 accountedRewards = _currentAccountedRewards();
@@ -57,6 +56,12 @@ contract GenericStakedAppreciatingVault is ERC4626 {
 
         // Either way, we're tracking the distribution from now.
         rewardTracker.rewardPeriodStart = block.timestamp;
+
+        emit RewardDistributionUpdated(
+            rewardTracker.rewardPeriodStart,
+            rewardTracker.rewardPeriodEnd,
+            rewardTracker.rewardAmount
+        );
     }
 
     function totalAssets() public view override returns (uint256) {

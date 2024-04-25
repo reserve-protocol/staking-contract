@@ -19,6 +19,10 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         address initialOwner
     ) ERC4626(_underlying) ERC20(_name, _symbol) Ownable(initialOwner) {}
 
+    /*
+     ** Core Vault Functionality
+     */
+
     function _convertToShares(uint256 assets, Math.Rounding) internal pure override returns (uint256) {
         return assets;
     }
@@ -54,9 +58,9 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         super._update(from, to, amount);
     }
 
-    /*//////////////////////////////////////////////////////////////
-                            CLAIM LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /*
+     ** Rewards: Claim Logic
+     */
 
     /**
      * @notice Claim rewards for a user in any amount of rewardTokens.
@@ -79,12 +83,13 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         }
     }
 
-    /*//////////////////////////////////////////////////////////////
-                    REWARDS MANAGEMENT LOGIC
-    //////////////////////////////////////////////////////////////*/
+    /*
+     ** Rewards: Management
+     */
 
     IERC20[] public rewardTokens;
     mapping(IERC20 rewardToken => RewardInfo rewardInfo) public rewardInfos;
+    mapping(IERC20 rewardToken => address distributor) public distributorInfo;
 
     mapping(address user => mapping(IERC20 rewardToken => uint256 rewardIndex)) public userIndex;
     mapping(address user => mapping(IERC20 rewardToken => uint256 accruedRewards)) public accruedRewards;
@@ -92,13 +97,18 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     /**
      * @notice Adds a new rewardToken which can be earned via staking. Caller must be owner.
      * @param rewardToken Token that can be earned by staking.
+     * @param distributor Distributor with the ability to control rewards for this token.
      * @param rewardsPerSecond The rate in which `rewardToken` will be accrued.
      * @param amount Initial funding amount for this reward.
      * @dev The `rewardsEndTimestamp` gets calculated based on `rewardsPerSecond` and `amount`.
      * @dev If `rewardsPerSecond` is 0 the rewards will be paid out instantly. In this case `amount` must be 0.
-     * @dev If `useEscrow` is `false` the `escrowDuration`, `escrowPercentage` and `offset` will be ignored.
      */
-    function addRewardToken(IERC20Metadata rewardToken, uint256 rewardsPerSecond, uint256 amount) external onlyOwner {
+    function addRewardToken(
+        IERC20Metadata rewardToken,
+        address distributor,
+        uint256 rewardsPerSecond,
+        uint256 amount
+    ) external onlyOwner {
         if (asset() == address(rewardToken)) {
             revert Errors.RewardTokenCanNotBeStakingToken();
         }
@@ -136,17 +146,39 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             index: index,
             ONE: ONE
         });
+        distributorInfo[rewardToken] = distributor;
 
         emit Events.RewardInfoUpdate(rewardToken, rewardsPerSecond, rewardsEndTimestamp);
     }
 
     /**
-     * @notice Changes rewards speed for a rewardToken. This works only for rewards that accrue over time. Caller must be owner.
+     * @notice Updates distributor for the rewardToken
+     * @param rewardToken Token that can be earned by staking.
+     * @param distributor Distributor with the ability to control rewards for this token.
+     * @dev Callable by owner or distributor themselves.
+     * @dev Setting to address(0) will only allow owner to control it.
+     */
+    function updateDistributor(IERC20 rewardToken, address distributor) external {
+        if (_msgSender() != owner() && _msgSender() != distributorInfo[rewardToken]) {
+            revert Errors.InvalidCaller(_msgSender());
+        }
+
+        distributorInfo[rewardToken] = distributor;
+    }
+
+    /**
+     * @notice Changes `rewardsPerSecond` for rewardToken.
      * @param rewardToken Token that can be earned by staking.
      * @param rewardsPerSecond The rate in which `rewardToken` will be accrued.
+     * @dev Callable by owner or distributor for the token.
      * @dev The `rewardsEndTimestamp` gets calculated based on `rewardsPerSecond` and `amount`.
+     * @dev Only for rewards that accrue over time.
      */
-    function changeRewardSpeed(IERC20 rewardToken, uint256 rewardsPerSecond) external onlyOwner {
+    function changeRewardSpeed(IERC20 rewardToken, uint256 rewardsPerSecond) external {
+        if (_msgSender() != owner() && _msgSender() != distributorInfo[rewardToken]) {
+            revert Errors.InvalidCaller(_msgSender());
+        }
+
         RewardInfo memory rewards = rewardInfos[rewardToken];
 
         if (rewardsPerSecond == 0) {
@@ -172,11 +204,12 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     }
 
     /**
-     * @notice Funds rewards for a rewardToken.
+     * @notice Fund reward streams for a rewardToken.
      * @param rewardToken Token that can be earned by staking.
      * @param amount The amount of rewardToken that will fund this reward.
      * @dev The `rewardsEndTimestamp` gets calculated based on `rewardsPerSecond` and `amount`.
      * @dev If `rewardsPerSecond` is 0 the rewards will be paid out instantly.
+     * @dev Permissionless
      */
     function fundReward(IERC20 rewardToken, uint256 amount) external {
         if (amount == 0) {
@@ -222,11 +255,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         return rewardTokens;
     }
 
-    /*//////////////////////////////////////////////////////////////
-                      REWARDS ACCRUAL LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Accrue rewards for up to 2 users for all available reward tokens.
     modifier accrueRewards(address _caller, address _receiver) {
         IERC20[] memory _rewardTokens = rewardTokens;
         for (uint256 i; i < _rewardTokens.length; i++) {
@@ -239,7 +267,8 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
 
             _accrueUser(_receiver, rewardToken);
 
-            // If a deposit/withdraw operation gets called for another user we should accrue for both of them to avoid potential issues
+            // If a deposit/withdraw operation gets called for another user we should
+            // accrue for both of them to avoid potential issues
             if (_receiver != _caller) {
                 _accrueUser(_caller, rewardToken);
             }
@@ -249,7 +278,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
 
     /**
      * @notice Accrue rewards over time.
-     * @dev Based on https://github.com/fei-protocol/flywheel-v2/blob/main/src/rewards/FlywheelStaticRewards.sol
      */
     function _accrueStatic(RewardInfo memory rewards) internal view returns (uint256 accrued) {
         uint256 elapsed;

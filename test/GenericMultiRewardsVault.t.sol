@@ -483,11 +483,11 @@ contract GenericMultiRewardsVaultTest is Test {
         uint256 totalAmount = 10 * ONE;
         uint256 rewardsPerSecond = totalAmount / 100; // so, duration = 100
 
-        staking.addRewardToken(IERC20Metadata(address(rewardsToken)), rewardsPerSecond, totalAmount);
+        staking.addRewardToken(IERC20Metadata(address(rewardsToken)), address(this), rewardsPerSecond, totalAmount);
     }
 
     function _addRewardTokenWithZeroRewardsSpeed(ERC20Mock rewardsToken) internal {
-        staking.addRewardToken(IERC20Metadata(address(rewardsToken)), 0, 0);
+        staking.addRewardToken(IERC20Metadata(address(rewardsToken)), address(this), 0, 0);
     }
 
     function test__addRewardToken() public {
@@ -500,7 +500,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         emit Events.RewardInfoUpdate(iRewardToken1, 0.1 ether, SafeCast.toUint32(callTimestamp + 100));
 
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0.1 ether, 10 ether);
 
         // Confirm that all data is set correctly
         IERC20[] memory rewardTokens = staking.getAllRewardsTokens();
@@ -531,7 +531,7 @@ contract GenericMultiRewardsVaultTest is Test {
         vm.expectEmit(false, false, false, true, address(staking));
         emit Events.RewardInfoUpdate(iRewardToken1, 0, SafeCast.toUint32(callTimestamp));
 
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0, 0);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0, 0);
 
         (
             uint8 decimals,
@@ -557,7 +557,7 @@ contract GenericMultiRewardsVaultTest is Test {
         rewardToken1.transfer(address(staking), 10 ether);
 
         uint256 callTimestamp = block.timestamp;
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0.1 ether, 10 ether);
 
         // RewardsEndTimeStamp shouldnt be affected by previous token transfer
         (, uint48 rewardsEndTimestamp, , , , ) = staking.rewardInfos(iRewardToken1);
@@ -573,14 +573,14 @@ contract GenericMultiRewardsVaultTest is Test {
         rewardToken1.mint(address(this), 20 ether);
         rewardToken1.approve(address(staking), 20 ether);
 
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0.1 ether, 10 ether);
 
         vm.expectRevert(Errors.RewardTokenAlreadyExist.selector);
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0.1 ether, 10 ether);
     }
 
     function testFail__addRewardToken_rewardsToken_is_stakingToken() public {
-        staking.addRewardToken(IERC20Metadata(address(stakingToken)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(stakingToken)), address(this), 0.1 ether, 10 ether);
     }
 
     function testFail__addRewardToken_0_rewardsSpeed_non_0_amount() public {
@@ -588,19 +588,19 @@ contract GenericMultiRewardsVaultTest is Test {
         rewardToken1.mint(address(this), 1 ether);
         rewardToken1.approve(address(staking), 1 ether);
 
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0, 1 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0, 1 ether);
     }
 
     function testFail__addRewardToken_escrow_with_0_percentage() public {
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0.1 ether, 10 ether);
     }
 
     function testFail__addRewardToken_escrow_with_more_than_100_percentage() public {
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0.1 ether, 10 ether);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0.1 ether, 10 ether);
     }
 
     function testFail__addRewardToken_0_rewardsSpeed_amount_larger_0_and_0_shares() public {
-        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), 0, 10);
+        staking.addRewardToken(IERC20Metadata(address(iRewardToken1)), address(this), 0, 10);
     }
 
     /*//////////////////////////////////////////////////////////////
