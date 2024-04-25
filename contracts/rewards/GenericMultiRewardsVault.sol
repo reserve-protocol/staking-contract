@@ -139,9 +139,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         uint8 rewardTokenDecimals = rewardToken.decimals();
 
         uint256 ONE = 10 ** rewardTokenDecimals;
-        uint256 index = rewardsPerSecond == 0 && amount != 0
-            ? ONE + ((amount * uint256(10 ** decimals())) / totalSupply())
-            : ONE;
         uint48 rewardsEndTimestamp = rewardsPerSecond == 0
             ? SafeCast.toUint48(block.timestamp)
             : _calcRewardsEnd(0, rewardsPerSecond, amount);
@@ -151,7 +148,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             rewardsEndTimestamp: rewardsEndTimestamp,
             lastUpdatedTimestamp: SafeCast.toUint48(block.timestamp),
             rewardsPerSecond: rewardsPerSecond,
-            index: index,
+            index: ONE,
             ONE: ONE
         });
         distributorInfo[rewardToken] = distributor;
