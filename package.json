@@ -5,13 +5,13 @@
   "license": "MIT",
   "packageManager": "yarn@4.1.1",
   "scripts": {
-    "compile": "hardhat compile",
-    "test": "hardhat test",
+    "compile": "forge compile",
+    "test": "forge test",
+    "coverage": "forge coverage --report lcov",
     "size": "hardhat size-contracts",
-    "clean": "hardhat clean && rm -rf ./cache",
+    "clean": "rm -rf ./cache ./out ./artifacts ./cache ./lcov.info",
     "format": "prettier --write \"./**/*.{js,ts,json,md,sol,yaml,yml}\"",
-    "anvil": "anvil --fork-url https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161 --chain-id 31337 --balance 1000",
-    "coverage": "forge coverage --report lcov"
+    "anvil": "anvil --fork-url https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161 --chain-id 31337 --balance 1000"
   },
   "repository": {
     "type": "git",
