@@ -18,6 +18,9 @@ struct RewardTracker {
  * 
  * The only reward token is the asset itself. Adding rewards is permisionless. 
  * 
+ * Asset tokens accidentally transferred into the contract will be picked up as part of 
+ * the next week distribution period. 
+ * 
  * Unit notation
  *   - {qAsset} = Asset token quanta
  *   - {qShare} = Share token quanta

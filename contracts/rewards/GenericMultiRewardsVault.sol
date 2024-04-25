@@ -14,6 +14,7 @@ import { RewardInfo, Errors, Events } from "./definitions.sol";
 /*
  * @title GenericMultiRewardsVault
  * @notice Non-transferrable ERC4626 vault that allows streaming of rewards in multiple tokens
+ * @dev Reward tokens transferred by accident without using fundReward() will be lost!
  * 
  * Registering new reward tokens is permissioned, but adding funds is permissionless
  * 
@@ -64,6 +65,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         super._withdraw(caller, receiver, owner_, assets, shares);
     }
 
+    /// @dev Prevent transfer
     function _update(address from, address to, uint256 amount) internal virtual override {
         if (from != address(0) && to != address(0)) {
             revert Errors.NotAllowed();
