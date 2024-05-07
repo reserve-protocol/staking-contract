@@ -17,7 +17,6 @@ struct RewardInfo {
 abstract contract Errors {
     // Reward Management
     error InvalidRewardToken(IERC20 rewardToken);
-    error RewardTokenAlreadyBlocked(IERC20 rewardToken);
     error RewardTokenAlreadyExist(IERC20 rewardToken);
     error RewardTokenDoesNotExist(IERC20 rewardToken);
     error RewardTokenCanNotBeStakingToken();

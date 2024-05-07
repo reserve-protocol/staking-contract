@@ -187,9 +187,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         if (rewards.lastUpdatedTimestamp == 0) {
             revert Errors.InvalidRewardToken(rewardToken);
         }
-        if (isRewardTokenBlocked[rewardToken]) {
-            revert Errors.RewardTokenAlreadyBlocked(rewardToken);
-        }
         if (_accrue) {
             _accrueRewards(rewardToken, _accrueStatic(rewards));
         }
