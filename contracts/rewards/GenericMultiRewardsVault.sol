@@ -103,6 +103,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     IERC20[] public rewardTokens;
     mapping(IERC20 rewardToken => RewardInfo rewardInfo) public rewardInfos;
     mapping(IERC20 rewardToken => address distributor) public distributorInfo;
+    mapping(IERC20 rewardToken => uint256 excessRewards) public leftoverRewards;
 
     mapping(address user => mapping(IERC20 rewardToken => uint256 rewardIndex)) public userIndex; // {qRewardTok}
     mapping(address user => mapping(IERC20 rewardToken => uint256 accruedRewards)) public accruedRewards; // {qRewardTok}
@@ -147,7 +148,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         uint256 ONE = 10 ** rewardTokenDecimals;
         uint48 rewardsEndTimestamp = rewardsPerSecond == 0
             ? SafeCast.toUint48(block.timestamp)
-            : _calcRewardsEnd(0, rewardsPerSecond, amount);
+            : _calcRewardsEnd(rewardToken, 0, rewardsPerSecond, amount);
 
         rewardInfos[rewardToken] = RewardInfo({
             decimals: rewardTokenDecimals,
@@ -208,7 +209,12 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         uint256 remainder = prevEndTime <= block.timestamp
             ? 0
             : uint256(rewards.rewardsPerSecond) * (prevEndTime - block.timestamp);
-        uint48 rewardsEndTimestamp = _calcRewardsEnd(SafeCast.toUint48(block.timestamp), rewardsPerSecond, remainder);
+        uint48 rewardsEndTimestamp = _calcRewardsEnd(
+            rewardToken,
+            SafeCast.toUint48(block.timestamp),
+            rewardsPerSecond,
+            remainder
+        );
 
         rewardInfos[rewardToken].rewardsPerSecond = rewardsPerSecond;
         rewardInfos[rewardToken].rewardsEndTimestamp = rewardsEndTimestamp;
@@ -245,7 +251,12 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
 
         uint48 rewardsEndTimestamp = rewards.rewardsEndTimestamp;
         if (rewards.rewardsPerSecond > 0) {
-            rewardsEndTimestamp = _calcRewardsEnd(rewards.rewardsEndTimestamp, rewards.rewardsPerSecond, amount);
+            rewardsEndTimestamp = _calcRewardsEnd(
+                rewardToken,
+                rewards.rewardsEndTimestamp,
+                rewards.rewardsPerSecond,
+                amount
+            );
             rewardInfos[rewardToken].rewardsEndTimestamp = rewardsEndTimestamp;
         }
 
@@ -253,23 +264,30 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     }
 
     /**
+     * @param rewardToken {qRewardTok}
      * @param rewardsEndTimestamp {s}
      * @param rewardsPerSecond {qRewardTok/s}
      * @param amount {qRewardTok}
      * @return {s}
      */
     function _calcRewardsEnd(
+        IERC20 rewardToken,
         uint48 rewardsEndTimestamp,
         uint256 rewardsPerSecond,
         uint256 amount
-    ) internal view returns (uint48) {
+    ) internal returns (uint48) {
+        amount += leftoverRewards[rewardToken];
+
         if (rewardsEndTimestamp > block.timestamp) {
             // {qRewardTok} += ({qRewardTok/s} * ({s} - {s}))
             amount += rewardsPerSecond * (rewardsEndTimestamp - block.timestamp);
         }
 
         // {s} = {s} + ({qRewardTok} / {qRewardTok/s})
-        return SafeCast.toUint48(block.timestamp + (amount / uint256(rewardsPerSecond)));
+        uint256 endTimestamp = (block.timestamp + (amount / uint256(rewardsPerSecond)));
+        leftoverRewards[rewardToken] = amount - (endTimestamp - block.timestamp) * rewardsPerSecond;
+
+        return SafeCast.toUint48(endTimestamp);
     }
 
     function getAllRewardsTokens() external view returns (IERC20[] memory) {
@@ -324,6 +342,8 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         if (supplyTokens != 0) {
             // {qRewardTok} = {qRewardTok} * {qShare} / {qShare}
             deltaIndex = (accrued * uint256(10 ** decimals()) * SCALAR) / supplyTokens;
+        } else {
+            leftoverRewards[_rewardToken] += accrued;
         }
 
         // {qRewardTok} += {qRewardTok}
