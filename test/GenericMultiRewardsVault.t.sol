@@ -6,7 +6,7 @@ import { ERC20Mock } from "@test/mocks/ERC20Mock.sol";
 
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
-import { GenericMultiRewardsVault, IERC20, IERC20Metadata } from "@src/rewards/GenericMultiRewardsVault.sol";
+import { GenericMultiRewardsVault, IERC20, IERC20Metadata, SCALAR } from "@src/rewards/GenericMultiRewardsVault.sol";
 import { Errors, Events } from "@src/rewards/definitions.sol";
 
 // Test Suite based on Popcorn DAO's MultiRewardStaking
@@ -224,7 +224,7 @@ contract GenericMultiRewardsVaultTest is Test {
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
         // console2.log(index);
         // console2.log("ts", staking.totalSupply());
-        assertEq(uint256(index), 2 * ONE);
+        assertEq(uint256(index), 2 * ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -238,7 +238,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.mint(2 ether, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), (25 * ONE) / 10);
+        assertEq(uint256(index), (25 * ONE * SCALAR) / 10);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -251,7 +251,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.withdraw(2 ether, alice, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), (425 * ONE) / 100);
+        assertEq(uint256(index), (425 * ONE * SCALAR) / 100);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -264,7 +264,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.redeem(1 ether, alice, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), (475 * ONE) / 100);
+        assertEq(uint256(index), (475 * ONE * SCALAR) / 100);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -288,7 +288,7 @@ contract GenericMultiRewardsVaultTest is Test {
         (, , uint48 lastUpdatedTimestampReward1, , uint256 indexReward1, uint256 reward1ONE) = staking.rewardInfos(
             iRewardToken1
         );
-        assertEq(uint256(indexReward1), 2 * reward1ONE);
+        assertEq(uint256(indexReward1), 2 * reward1ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestampReward1), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), indexReward1);
@@ -306,7 +306,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         // RewardsToken 1 -- 20% accrued
         (, , lastUpdatedTimestampReward1, , indexReward1, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(indexReward1), (25 * reward1ONE) / 10);
+        assertEq(uint256(indexReward1), (25 * reward1ONE * SCALAR) / 10);
         assertEq(uint256(lastUpdatedTimestampReward1), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), indexReward1);
@@ -316,7 +316,7 @@ contract GenericMultiRewardsVaultTest is Test {
         (, , uint48 lastUpdatedTimestampReward2, , uint256 indexReward2, uint256 reward2ONE) = staking.rewardInfos(
             iRewardToken2
         );
-        assertEq(uint256(indexReward2), (15 * reward2ONE) / 10);
+        assertEq(uint256(indexReward2), (15 * reward2ONE * SCALAR) / 10);
         assertEq(uint256(lastUpdatedTimestampReward2), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken2), indexReward2);
@@ -329,7 +329,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         // RewardsToken 1 -- 100% accrued
         (, , lastUpdatedTimestampReward1, , indexReward1, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(indexReward1), (45 * reward1ONE) / 10);
+        assertEq(uint256(indexReward1), (45 * reward1ONE * SCALAR) / 10);
         assertEq(uint256(lastUpdatedTimestampReward1), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), indexReward1);
@@ -337,7 +337,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         // RewardsToken 2 -- 90% accrued
         (, , lastUpdatedTimestampReward2, , indexReward2, ) = staking.rewardInfos(iRewardToken2);
-        assertEq(uint256(indexReward2), (35 * reward2ONE) / 10);
+        assertEq(uint256(indexReward2), (35 * reward2ONE * SCALAR) / 10);
         assertEq(uint256(lastUpdatedTimestampReward2), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken2), indexReward2);
@@ -365,7 +365,7 @@ contract GenericMultiRewardsVaultTest is Test {
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
         assertEq(rewardToken1.balanceOf(alice), 1 * ONE);
 
-        assertEq(uint256(index), 2 * ONE);
+        assertEq(uint256(index), 2 * ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -389,7 +389,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.deposit(1 ether, alice);
 
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), 11 * ONE);
+        assertEq(uint256(index), 11 * ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -403,7 +403,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.withdraw(1 ether, alice, alice);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), 11 * ONE);
+        assertEq(uint256(index), 11 * ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -426,7 +426,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         (, , uint48 lastUpdatedTimestamp, , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
         // Accrual doesnt start until someone deposits -- TODO does this change some of the rewardsEnd and rewardsSpeed assumptions?
-        assertEq(uint256(index), 1 * ONE);
+        assertEq(uint256(index), 1 * ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -439,7 +439,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.mint(2 ether, bob);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), 2 * ONE);
+        assertEq(uint256(index), 2 * ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -458,7 +458,7 @@ contract GenericMultiRewardsVaultTest is Test {
         staking.withdraw((5 * ONE) / 10, bob, bob);
 
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), ONE + (ONE * 10) / 3);
+        assertEq(uint256(index), ONE * SCALAR + (ONE * 10 * SCALAR) / 3);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
@@ -518,7 +518,7 @@ contract GenericMultiRewardsVaultTest is Test {
         assertEq(uint256(ONE), 10 ** decimals);
         assertEq(rewardsPerSecond, 0.1 ether);
         assertEq(uint256(rewardsEndTimestamp), callTimestamp + 100);
-        assertEq(index, ONE);
+        assertEq(index, ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
 
         // Confirm token transfer
@@ -544,7 +544,7 @@ contract GenericMultiRewardsVaultTest is Test {
         assertEq(uint256(ONE), 10 ** decimals);
         assertEq(rewardsPerSecond, 0);
         assertEq(uint256(rewardsEndTimestamp), callTimestamp);
-        assertEq(index, ONE);
+        assertEq(index, ONE * SCALAR);
         assertEq(uint256(lastUpdatedTimestamp), callTimestamp);
     }
 
@@ -643,7 +643,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         // Check Alice RewardsState
         (, , uint48 lastUpdatedTimestamp, , uint256 index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), 5 * ONE);
+        assertEq(uint256(index), 5 * ONE * SCALAR);
 
         assertEq(staking.userIndex(alice, iRewardToken1), index);
         assertEq(staking.accruedRewards(alice, iRewardToken1), 4 * ONE);
@@ -653,7 +653,7 @@ contract GenericMultiRewardsVaultTest is Test {
 
         // Check Bobs RewardsState
         (, , lastUpdatedTimestamp, , index, ) = staking.rewardInfos(iRewardToken1);
-        assertEq(uint256(index), 5 * ONE);
+        assertEq(uint256(index), 5 * ONE * SCALAR);
 
         assertEq(staking.userIndex(bob, iRewardToken1), index);
         assertEq(staking.accruedRewards(bob, iRewardToken1), 1 * ONE);

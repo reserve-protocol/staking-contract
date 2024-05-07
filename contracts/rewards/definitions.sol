@@ -3,6 +3,8 @@ pragma solidity 0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 
+uint256 constant SCALAR = 1e18;
+
 struct RewardInfo {
     uint8 decimals; // Reward Token Decimals
     uint48 rewardsEndTimestamp; // {s} Rewards End Timestamp; 0 = instant

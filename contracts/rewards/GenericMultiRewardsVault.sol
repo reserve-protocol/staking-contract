@@ -8,7 +8,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import { RewardInfo, Errors, Events } from "./definitions.sol";
+import { RewardInfo, Errors, Events, SCALAR } from "./definitions.sol";
 
 /**
  * @title GenericMultiRewardsVault
@@ -158,7 +158,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             rewardsEndTimestamp: rewardsEndTimestamp,
             lastUpdatedTimestamp: SafeCast.toUint48(block.timestamp),
             rewardsPerSecond: rewardsPerSecond,
-            index: ONE,
+            index: ONE * SCALAR,
             ONE: ONE
         });
         distributorInfo[rewardToken] = distributor;
@@ -325,7 +325,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
 
         if (supplyTokens != 0) {
             // {qRewardTok} = {qRewardTok} * {qShare} / {qShare}
-            deltaIndex = (accrued * uint256(10 ** decimals())) / supplyTokens;
+            deltaIndex = (accrued * uint256(10 ** decimals()) * SCALAR) / supplyTokens;
         }
 
         // {qRewardTok} += {qRewardTok}
@@ -344,14 +344,14 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         // If user hasn't yet accrued rewards, grant them interest from the strategy beginning if they have a balance
         // Zero balances will have no effect other than syncing to global index
         if (oldIndex == 0) {
-            oldIndex = rewardIndex.ONE;
+            oldIndex = rewardIndex.ONE * SCALAR;
         }
 
         uint256 deltaIndex = rewardIndex.index - oldIndex;
 
         // Accumulate rewards by multiplying user tokens by rewardsPerToken index and adding on unclaimed
         // {qRewardTok} = {qShare} * {qRewardTok} / {qShare}
-        uint256 supplierDelta = (balanceOf(_user) * deltaIndex) / uint256(10 ** decimals());
+        uint256 supplierDelta = (balanceOf(_user) * deltaIndex) / uint256(10 ** decimals()) / SCALAR;
 
         // {qRewardTok} += {qRewardTok}
         accruedRewards[_user][_rewardToken] += supplierDelta;
