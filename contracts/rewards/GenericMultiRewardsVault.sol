@@ -16,7 +16,7 @@ import { RewardInfo, Errors, Events, SCALAR } from "./definitions.sol";
  * @dev Reward tokens transferred by accident without using `fundReward()` will be lost!
  *      Registering new reward tokens is permissioned, but adding funds is permissionless.
  *      No appreciation; exchange rate is always 1:1 with underlying.
-
+ *
  * Unit notation
  *   - {qRewardTok} = Reward token quanta
  *   - {qAsset} = Asset token quanta
@@ -34,10 +34,6 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     /**
      * Core Vault Functionality
      */
-    function decimals() public view override returns (uint8) {
-        return IERC20Metadata(asset()).decimals();
-    }
-
     function _convertToShares(uint256 assets, Math.Rounding) internal pure override returns (uint256) {
         return assets;
     }

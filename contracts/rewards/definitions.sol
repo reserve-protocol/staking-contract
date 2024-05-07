@@ -7,9 +7,9 @@ uint256 constant SCALAR = 1e18;
 
 struct RewardInfo {
     uint8 decimals; // Reward Token Decimals
-    uint48 rewardsEndTimestamp; // {s} Rewards End Timestamp; 0 = instant
+    uint48 rewardsEndTimestamp; // {s} Rewards End Timestamp
     uint48 lastUpdatedTimestamp; // {s} Last updated timestamp
-    uint256 rewardsPerSecond; // {qRewardTok/s} Rewards per Second
+    uint256 rewardsPerSecond; // {qRewardTok/s} Rewards per Second; 0 = instant
     uint256 index; // {qRewardTok} Last updated reward index
     uint256 ONE; // {qRewardTok} Reward Token Scalar
 }
