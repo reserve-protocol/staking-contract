@@ -91,7 +91,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             uint256 rewardAmount = accruedRewards[user][_rewardTokens[i]];
 
             if (rewardAmount == 0) {
-                revert Errors.ZeroRewards(_rewardTokens[i]);
+                continue;
             }
 
             accruedRewards[user][_rewardTokens[i]] = 0;

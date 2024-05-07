@@ -854,18 +854,4 @@ contract GenericMultiRewardsVaultTest is Test {
         assertEq(staking.accruedRewards(alice, iRewardToken1), 0);
         assertEq(rewardToken1.balanceOf(alice), 5 ether);
     }
-
-    function testFail__claim_non_existent_rewardsToken() public {
-        IERC20[] memory rewardsTokenKeys = new IERC20[](1);
-
-        vm.prank(alice);
-        staking.claimRewards(alice, rewardsTokenKeys);
-    }
-
-    function testFail__claim_non_existent_reward() public {
-        IERC20[] memory rewardsTokenKeys = new IERC20[](1);
-
-        vm.prank(alice);
-        staking.claimRewards(alice, rewardsTokenKeys);
-    }
 }
