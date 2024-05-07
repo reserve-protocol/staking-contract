@@ -24,6 +24,8 @@ import { RewardInfo, Errors, Events, SCALAR } from "./definitions.sol";
  *   - {s} = Seconds
  */
 contract GenericMultiRewardsVault is ERC4626, Ownable {
+    uint256 private totalDeposited; // {qAsset}
+
     constructor(
         string memory _name,
         string memory _symbol,
@@ -34,6 +36,10 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     /**
      * Core Vault Functionality
      */
+    function totalAssets() public view override returns (uint256) {
+        return totalDeposited; // {qAsset}
+    }
+
     function _convertToShares(uint256 assets, Math.Rounding) internal pure override returns (uint256) {
         return assets;
     }
@@ -49,6 +55,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         uint256 shares
     ) internal override accrueRewards(caller, receiver) {
         super._deposit(caller, receiver, assets, shares);
+        totalDeposited += assets;
     }
 
     function _withdraw(
@@ -59,6 +66,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         uint256 shares
     ) internal override accrueRewards(owner_, receiver) {
         super._withdraw(caller, receiver, owner_, assets, shares);
+        totalDeposited -= assets;
     }
 
     /**
