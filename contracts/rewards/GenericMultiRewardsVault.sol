@@ -212,6 +212,8 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
 
         rewardInfos[rewardToken].rewardsPerSecond = rewardsPerSecond;
         rewardInfos[rewardToken].rewardsEndTimestamp = rewardsEndTimestamp;
+
+        emit Events.RewardInfoUpdate(rewardToken, rewardsPerSecond, rewardsEndTimestamp);
     }
 
     /**
