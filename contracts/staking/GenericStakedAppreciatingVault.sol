@@ -4,8 +4,6 @@ pragma solidity 0.8.24;
 import { ERC4626, IERC20, ERC20 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-uint256 constant SCALING_FACTOR = 1e18;
-
 struct RewardTracker {
     uint256 rewardPeriodStart; // {s}
     uint256 rewardPeriodEnd; // {s}
@@ -113,12 +111,8 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         uint256 previousDistributionPeriod = rewardTracker.rewardPeriodEnd - rewardTracker.rewardPeriodStart;
         uint256 timePassed = block.timestamp - rewardTracker.rewardPeriodStart;
 
-        // D18{1} = {s} * D18 / {s}
-        uint256 timePassedPercentage = (timePassed * SCALING_FACTOR) / previousDistributionPeriod;
-
-        // {qAsset} = {qAsset} * D18{1} / D18
-        uint256 accountedRewards = (rewardTracker.rewardAmount * timePassedPercentage) / SCALING_FACTOR;
-        return accountedRewards;
+        // {qAsset} = {qAsset} * {s} / {s}
+        return (rewardTracker.rewardAmount * timePassed) / previousDistributionPeriod;
     }
 
     function _deposit(address caller, address receiver, uint256 assets, uint256 shares) internal override {
