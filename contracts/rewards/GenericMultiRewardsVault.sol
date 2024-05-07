@@ -90,7 +90,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
      * @param _rewardTokens Array of rewardTokens for which rewards should be claimed.
      * @dev This function will revert if any of the rewardTokens have zero rewards accrued.
      */
-    function claimRewards(address user, IERC20[] memory _rewardTokens) external accrueRewards(msg.sender, user) {
+    function claimRewards(address user, IERC20[] memory _rewardTokens) external accrueRewards(_msgSender(), user) {
         for (uint8 i; i < _rewardTokens.length; i++) {
             uint256 rewardAmount = accruedRewards[user][_rewardTokens[i]];
 
@@ -146,7 +146,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
                 revert Errors.ZeroRewardsSpeed();
             }
 
-            SafeERC20.safeTransferFrom(rewardToken, msg.sender, address(this), amount);
+            SafeERC20.safeTransferFrom(rewardToken, _msgSender(), address(this), amount);
         }
 
         rewardTokens.push(rewardToken);
@@ -169,6 +169,50 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         distributorInfo[rewardToken] = distributor;
 
         emit Events.RewardInfoUpdate(rewardToken, rewardsPerSecond, rewardsEndTimestamp);
+    }
+
+    /**
+     * @notice Removes a rewardToken. Caller must be owner. EMERGENCY ONLY.
+     * @param rewardToken Token that can be earned by staking.
+     * @dev This action is destructive and will disable reward accrual for this token.
+     *      ONLY CONSIDER USING DURING EMERGENCY.
+     */
+    function removeRewardToken(IERC20 rewardToken, bool _accrue) external onlyOwner {
+        RewardInfo memory rewards = rewardInfos[rewardToken];
+
+        if (rewards.lastUpdatedTimestamp == 0) {
+            revert Errors.InvalidRewardToken(rewardToken);
+        }
+        if (_accrue) {
+            _accrueRewards(rewardToken, _accrueStatic(rewards));
+        }
+
+        delete rewardInfos[rewardToken];
+        delete distributorInfo[rewardToken];
+        delete leftoverRewards[rewardToken];
+
+        uint256 totalRewardTokens = rewardTokens.length;
+
+        for (uint256 i; i < totalRewardTokens; ++i) {
+            if (rewardTokens[i] == rewardToken) {
+                rewardTokens[i] = rewardTokens[totalRewardTokens - 1];
+                rewardTokens.pop();
+
+                break;
+            }
+        }
+    }
+    /**
+     * @notice Ragequit the system. EMERGENCY ONLY.
+     * @dev Allows the user to withdraw their tokens without accruing or claiming rewards.
+     *      ONLY CONSIDER USING DURING EMERGENCY.
+     */
+    function ragequit() external {
+        uint256 shares = balanceOf(_msgSender());
+        uint256 assets = previewRedeem(shares);
+
+        totalDeposited -= assets;
+        super._withdraw(_msgSender(), _msgSender(), _msgSender(), assets, shares);
     }
 
     /**
@@ -253,7 +297,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
             revert Errors.RewardTokenDoesNotExist(rewardToken);
         }
 
-        SafeERC20.safeTransferFrom(rewardToken, msg.sender, address(this), amount);
+        SafeERC20.safeTransferFrom(rewardToken, _msgSender(), address(this), amount);
 
         _accrueRewards(rewardToken, rewards.rewardsPerSecond == 0 ? amount : _accrueStatic(rewards));
 
