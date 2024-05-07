@@ -112,6 +112,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     mapping(IERC20 rewardToken => RewardInfo rewardInfo) public rewardInfos;
     mapping(IERC20 rewardToken => address distributor) public distributorInfo;
     mapping(IERC20 rewardToken => uint256 excessRewards) public leftoverRewards;
+    mapping(IERC20 rewardToken => bool isBlocked) public isRewardTokenBlocked;
 
     mapping(address user => mapping(IERC20 rewardToken => uint256 rewardIndex)) public userIndex; // {qRewardTok}
     mapping(address user => mapping(IERC20 rewardToken => uint256 accruedRewards)) public accruedRewards; // {qRewardTok}
@@ -134,6 +135,9 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
     ) external onlyOwner {
         if (asset() == address(rewardToken)) {
             revert Errors.RewardTokenCanNotBeStakingToken();
+        }
+        if (isRewardTokenBlocked[rewardToken]) {
+            revert Errors.RewardTokenBlocked(rewardToken);
         }
 
         RewardInfo memory rewards = rewardInfos[rewardToken];
@@ -183,6 +187,9 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         if (rewards.lastUpdatedTimestamp == 0) {
             revert Errors.InvalidRewardToken(rewardToken);
         }
+        if (isRewardTokenBlocked[rewardToken]) {
+            revert Errors.RewardTokenAlreadyBlocked(rewardToken);
+        }
         if (_accrue) {
             _accrueRewards(rewardToken, _accrueStatic(rewards));
         }
@@ -190,6 +197,7 @@ contract GenericMultiRewardsVault is ERC4626, Ownable {
         delete rewardInfos[rewardToken];
         delete distributorInfo[rewardToken];
         delete leftoverRewards[rewardToken];
+        isRewardTokenBlocked[rewardToken] = true;
 
         uint256 totalRewardTokens = rewardTokens.length;
 
