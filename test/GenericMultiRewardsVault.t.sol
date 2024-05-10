@@ -854,4 +854,24 @@ contract GenericMultiRewardsVaultTest is Test {
         assertEq(staking.accruedRewards(alice, iRewardToken1), 0);
         assertEq(rewardToken1.balanceOf(alice), 5 ether);
     }
+
+    function test_Ragequit() public {
+        _addRewardToken(rewardToken1);
+        stakingToken.mint(alice, 5 ether);
+
+        vm.startPrank(alice);
+        stakingToken.approve(address(staking), 5 ether);
+        staking.deposit(1 ether, alice);
+
+        // 10% of rewards paid out
+        vm.warp(block.timestamp + 10);
+
+        staking.ragequit();
+
+        (, , , , uint256 index, uint256 ONE) = staking.rewardInfos(iRewardToken1);
+
+        assertEq(index, ONE * SCALAR);
+        assertEq(staking.accruedRewards(alice, iRewardToken1), 0);
+        assertEq(rewardToken1.balanceOf(alice), 0);
+    }
 }
