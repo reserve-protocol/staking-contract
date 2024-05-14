@@ -36,7 +36,7 @@ contract ERC4626Router {
             // Figure out the deposit amount for the vault
             // Note: This also accounts for any assets that were transferred to the contract
             uint256 depositAmount = asset.balanceOf(address(this));
-            asset.approve(address(vault), depositAmount);
+            SafeERC20.forceApprove(asset, address(vault), depositAmount);
 
             if (i != vaultCount - 1) {
                 // If it's not the last vault, we deposit while minting to the contract.
