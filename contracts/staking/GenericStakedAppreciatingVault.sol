@@ -29,7 +29,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
     RewardTracker public rewardTracker;
     uint256 private totalDeposited; // {qAsset}
 
-    event RewardAdded(uint256 reward, uint256 periodStart, uint256 periodEnd);
     event RewardDistributionUpdated(uint256 periodStart, uint256 periodEnd, uint256 amount);
 
     /**
@@ -96,8 +95,6 @@ contract GenericStakedAppreciatingVault is ERC4626 {
         }
 
         _updateRewards();
-
-        emit RewardAdded(rewardTracker.rewardAmount, rewardTracker.rewardPeriodStart, rewardTracker.rewardPeriodEnd);
     }
 
     /**
