@@ -8,7 +8,7 @@ The epochs run automatically and yield is auto-compounded with hooks on the `dep
 
 ### Dev
 
-The implementation of the vault relies on an always increasing `totalAssets` value, the rate is calculated internally based on `totalAssets` per `totalSupply` which gives the exchange rate per unit of vault token. Additionally, the vault tackles inflation attacks with a decimal offset of `3` (equivalent to virtual shares offset of `1e3`).
+The implementation of the vault relies on an always increasing `totalAssets` value, the rate is calculated internally based on `totalAssets` per `totalSupply` which gives the exchange rate per unit of vault token.
 
 # Generic Multi Rewards Vault
 
@@ -22,3 +22,7 @@ The vault takes heavy inspiration from the following sources:
 - [Popcorn DAO - MultiRewardStaking](https://github.com/Popcorn-Limited/contracts/blob/d029c413239735f58b0adcead11fdbe8f69a0e34/src/utils/MultiRewardStaking.sol)
 
 This is a simplified implementation that keeps only the core functionality of the vaults and removes any additional features.
+
+## WARNING
+
+** When deploying GenericStakedAppreciatingVault, make sure to mint some initial dust (at least 1e4), to avoid an inflation attack. **

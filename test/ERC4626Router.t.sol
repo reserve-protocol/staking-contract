@@ -45,6 +45,6 @@ contract ERC4626RouterTest is Test {
         router.depositChained(vaults, depositAmount);
         vm.stopPrank();
 
-        assertEq(rewardsVault.balanceOf(USER1), depositAmount * 1e3);
+        assertEq(rewardsVault.balanceOf(USER1), depositAmount);
     }
 }
