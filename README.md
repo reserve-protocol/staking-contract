@@ -8,7 +8,7 @@ The epochs run automatically and yield is auto-compounded with hooks on the `dep
 
 ### Dev
 
-The implementation of the vault relies on an always increasing `totalAssets` value, the rate is calculated internally based on `totalAssets` per `totalSupply` which gives the exchange rate per unit of vault token. Additionally, the vault tackles inflation attacks with a decimal offset of `3` (equivalent to virtual shares offset of `1e3`).
+The implementation of the vault relies on an always increasing `totalAssets` value, the rate is calculated internally based on `totalAssets` per `totalSupply` which gives the exchange rate per unit of vault token.
 
 # Generic Multi Rewards Vault
 
