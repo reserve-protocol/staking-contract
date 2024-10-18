@@ -26,7 +26,7 @@ contract GenericStakedAppreciatingVaultTest is Test {
         vaultDecimals = vault.decimals();
         tokenDecimals = token.decimals();
 
-        assertTrue(vaultDecimals > tokenDecimals);
+        assertTrue(vaultDecimals == tokenDecimals);
         maxError = 10 ** (vaultDecimals - tokenDecimals + 1);
 
         token.mint(DEPLOYER, 1000 * 10 ** tokenDecimals);
